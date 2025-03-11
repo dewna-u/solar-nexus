@@ -1,0 +1,58 @@
+.container {
+    background-image: url('./bigstock-Solar-panel-against-blue-sky-16564781-1\ \(1\).jpg'); /* Path to your background image */
+    background-size: cover;
+    background-position: center;
+    height: 100vh;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  
+  h2 {
+    margin-bottom: 30px;
+    font-size: 2rem;
+  }
+  
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    max-width: 1200px;
+    width: 100%;
+  }
+  
+  .card {
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+  }
+  
+  .card h3 {
+    margin: 10px 0;
+    font-size: 1.5rem;
+  }
+  
+  .card p {
+    font-size: 1.2rem;
+    margin: 5px 0;
+  }
+  
+  button.back-btn {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  
+  button.back-btn:hover {
+    background-color: #0056b3;
+  }
+  
