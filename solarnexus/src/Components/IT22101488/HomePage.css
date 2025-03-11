@@ -1,0 +1,44 @@
+.home-container {
+    text-align: center;
+    padding: 50px;
+    background: url("../IT22101488/bigstock-Solar-panel-against-blue-sky-16564781-1\ \(1\).jpg") no-repeat center center;
+    background-size: cover;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+  }
+  
+  h1 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+  }
+  
+  p {
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+  }
+  
+  .button-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .home-btn {
+    background-color: #ff9800;
+    color: white;
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  
+  .home-btn:hover {
+    background-color: #e68900;
+  }
+  
