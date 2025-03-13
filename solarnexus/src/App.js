@@ -1,35 +1,40 @@
-import React, { useState } from "react";
+import React from "react";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import "./App.css";
 import HomePage from "./Components/IT22101488/HomePage";
 import SolarInputs from "./Components/IT22101488/SolarInputs";
 import MonitoringDashboard from "./Components/IT22101488/MonitoringDashboard";
-import PaymentPage from "./Components/IT22101488/PaymentPage"; // Import Payment Page
+import PaymentPage from "./Components/IT22259448/Payment";
+import MembershipPage from "./Components/IT22259448/MembershipPage";
+import Navbar from "./NavBar/navbar";
+import SolarDetails from "./Components/IT22101488/SolarDetails"; // Import new page
 
 function App() {
-  const [currentPage, setCurrentPage] = useState("home"); // "home", "input", "dashboard", "payment"
-
   return (
     <div className="App">
-      {currentPage === "home" && (
-        <HomePage
-          onGoToSolarInputs={() => setCurrentPage("input")}
-          onGoToDashboard={() => setCurrentPage("dashboard")}
-        />
-      )}
-      {currentPage === "input" && (
-        <SolarInputs 
-          onNavigate={() => setCurrentPage("dashboard")} 
-          onGoToPayment={() => setCurrentPage("payment")} // New navigation to payment page
-        />
-      )}
-      {currentPage === "dashboard" && (
-        <MonitoringDashboard onBack={() => setCurrentPage("home")} />
-      )}
-      {currentPage === "payment" && (
-        <PaymentPage onBack={() => setCurrentPage("input")} /> // Back to Solar Inputs
-      )}
+      <Navbar />
+      <Router>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/SolarInputs" element={<SolarInputs />} />
+          <Route path="/MonitoringDashboard" element={<MonitoringDashboard />} />
+          <Route path="/SolarDetails" element={<SolarDetails />} /> {/* New Route */}
+          <Route path="/PaymentPage" element={<PaymentPage />} />
+          <Route path="/MembershipPage" element={<MembershipPage />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Router>
     </div>
   );
 }
 
-export default App;
+function NotFound() {
+  return (
+    <div>
+      <h2>404 - Not Found</h2>
+      <p>The page you are looking for does not exist.</p>
+    </div>
+  );
+}
+
+export default App;

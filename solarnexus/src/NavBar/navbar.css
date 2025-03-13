@@ -1,0 +1,39 @@
+/* navbar.css */
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #333;
+    padding: 10px 20px;
+}
+
+.navbar-logo img {
+    height: 50px;
+}
+
+.navbar-menu {
+    list-style: none;
+    display: flex;
+    margin: 0;
+    padding: 0;
+}
+
+.navbar-menu li {
+    margin: 0 15px;
+}
+
+.navbar-menu a {
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+}
+
+.navbar-menu a:hover {
+    text-decoration: underline;
+}
+
+.navbar-search input {
+    padding: 5px;
+    font-size: 16px;
+}

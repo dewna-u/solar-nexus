@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import "./PaymentPage.css"; // Import CSS file
+import "./Payment.css"; // Import CSS file
 
-function PaymentPage() {
+function PaymentPage({ onBack }) {
   const [paymentMethod, setPaymentMethod] = useState("credit");
 
   const handlePaymentSubmit = (e) => {
@@ -66,8 +66,11 @@ function PaymentPage() {
 
         <button type="submit" className="pay-btn">Pay Now</button>
       </form>
+
+      {/* Back Button */}
+      <button className="back-btn" onClick={onBack}>Back</button>
     </div>
   );
 }
 
-export default PaymentPage;
+export default PaymentPage;
