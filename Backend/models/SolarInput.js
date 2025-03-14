@@ -1,9 +1,11 @@
 const mongoose = require("mongoose");
 
 const SolarInputSchema = new mongoose.Schema({
-  capacity: { type: Number, required: true },
-  hours: { type: Number, required: true },
-  battery: { type: Number, required: true },
+  numPanels: { type: Number, required: true },
+  panelCapacity: { type: Number, required: true },
+  totalCapacity: { type: Number, required: true },
+  location: { type: String, required: true },
+  weather: { type: Object, required: false }, // Stores weather data
   createdAt: { type: Date, default: Date.now }
 });
 

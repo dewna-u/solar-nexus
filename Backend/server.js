@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 
-const solarInputRoutes = require("./routes/solarInputs");
+const solarInputRoutes = require("./routes/solarInputs.js");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -14,6 +14,9 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // Routes
+app.get("/", (req, res) => {
+  res.send("Solar Nexus API");
+});
 app.use("/api/solarInputs", solarInputRoutes);
 
 // Connect to MongoDB
