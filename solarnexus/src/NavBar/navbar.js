@@ -9,7 +9,11 @@ const NavBar = () => {
                 <li><a href="/MembershipPage">Membership</a></li>
                 <li><a href="#contact">Contact Us</a></li>
                 <li><a href="#feedback">Feedback</a></li>
-                <li><a href="#login">Login</a></li>
+                <li><a href="/login">Login</a></li>
+                <li><a href="/forgotpassword">forgotpassword</a></li>
+                <li><a href="/Register">Register</a></li>
+                <li><a href="/userdashboard">UserDashboard</a></li>
+                <li><a href="/userprofile">userprofile</a></li>
                 <li><a href="#ai-chatbot">AI Chatbot</a></li>
             </ul>
         </nav>
