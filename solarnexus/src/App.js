@@ -8,6 +8,9 @@ import PaymentPage from "./Components/IT22259448/Payment";
 import MembershipPage from "./Components/IT22259448/MembershipPage";
 import Navbar from "./NavBar/navbar";
 import SolarDetails from "./Components/IT22101488/SolarDetails"; // Import new page
+import MembershipDetails from "./Components/IT22259448/MembershipDetails";
+import CancelMembership from "./Components/IT22259448/CancelMembership";
+import ChangeMembership from "./Components/IT22259448/ChangeMembership";
 
 function App() {
   return (
@@ -21,6 +24,9 @@ function App() {
           <Route path="/SolarDetails" element={<SolarDetails />} /> {/* New Route */}
           <Route path="/PaymentPage" element={<PaymentPage />} />
           <Route path="/MembershipPage" element={<MembershipPage />} />
+          <Route path="/MembershipDetails" element={<MembershipDetails />} />
+          <Route path="/CancelMembership" element={<CancelMembership/>} />
+          <Route path="/ChangeMembership" element={<ChangeMembership/>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>

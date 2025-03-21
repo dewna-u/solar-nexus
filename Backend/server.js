@@ -5,6 +5,7 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 
 const solarInputRoutes = require("./routes/solarInputs.js");
+const membershipRoutes = require("./routes/membershipRoutes.js");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -18,6 +19,7 @@ app.get("/", (req, res) => {
   res.send("Solar Nexus API");
 });
 app.use("/api/solarInputs", solarInputRoutes);
+app.use("/api/membership", membershipRoutes); // Add membership routes
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
