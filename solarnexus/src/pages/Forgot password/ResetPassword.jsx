@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { TextField, Button, Container, Typography, Box } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 
 const ResetPassword = () => {
@@ -8,7 +8,7 @@ const ResetPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  const email = localStorage.getItem("resetEmail");
+  const { token } = useParams(); // 🔹 Get token from URL
 
   const handleResetPassword = async (e) => {
     e.preventDefault();
@@ -20,9 +20,8 @@ const ResetPassword = () => {
     }
 
     try {
-      await axios.post("http://localhost:5000/api/auth/reset-password", { email, newPassword });
+      await axios.post(`http://localhost:5000/api/auth/reset-password/${token}`, { newPassword }); // 🔹 Send token in URL
       alert("Password reset successfully!");
-      localStorage.removeItem("resetEmail"); // Clear stored email
       navigate("/login");
     } catch (err) {
       setError(err.response?.data?.message || "Error resetting password.");

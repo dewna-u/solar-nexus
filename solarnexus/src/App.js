@@ -42,7 +42,7 @@ function App() {
           <Route path="*" element={<NotFound />} />
           <Route path="/login" element={<Login />}/>
           <Route path="/forgotpassword" element={<ForgotPassword />}/>
-          <Route path="/reset_password" element={<ResetPassword/>}/>
+          <Route path="/reset_password/:token" element={<ResetPassword />} />
           <Route path="/register" element={<Register/>}/>
           <Route path="/admindashboard" element={<AdminDashboard/>}/>
           <Route path="/userprofile" element={<AdminProfile />} /> {/* Ensure this exists */}
