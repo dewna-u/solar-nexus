@@ -14,6 +14,15 @@ function HomePage() {
   const onGoToMembership = () => {
     window.location.href = "/MembershipPage";
   };
+  const onGoToFeedback = () => {
+    window.location.href = "/Feedback";
+  };
+  const onGoToContact = () => {
+    window.location.href = "/Contact";
+  };
+  const onGoToFeedbackAdmin = () => {
+    window.location.href = "/FeedbackAdmin";
+  };
 
   return (
     <div>
@@ -34,6 +43,16 @@ function HomePage() {
           <button className="home-btn" onClick={onGoToMembership}>
             Membership Page
           </button>
+           <button className="home-btn" onClick={onGoToFeedback}>
+            feedback Pagez
+          </button>
+           <button className="home-btn" onClick={onGoToContact}>
+            Contact Page
+          </button>
+          <button className="home-btn" onClick={onGoToFeedbackAdmin}>
+            FeedbackAdmin Page
+          </button>
+          
         </div>
       </div>
     </div>

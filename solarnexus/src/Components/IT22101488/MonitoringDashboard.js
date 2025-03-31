@@ -4,12 +4,12 @@ import "./MonitoringDashboard.css";
 
 function MonitoringDashboard({ onBack }) {
   const [solarData, setSolarData] = useState(null);
-  
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await axios.get("http://localhost:5000/api/solarInputs");
-        
+
         if (response.data.length > 0) {
           setSolarData(response.data[response.data.length - 1]); // Get the latest entry
         }
@@ -20,6 +20,24 @@ function MonitoringDashboard({ onBack }) {
 
     fetchData();
   }, []);
+
+  // Function to determine weather condition safely
+  const getWeatherCondition = (day) => {
+    if (!day || !day.phrase) {
+      return "🌡️ Data Unavailable"; // Default text if phrase is missing
+    }
+
+    const lowerPhrase = day.phrase.toLowerCase();
+    if (lowerPhrase.includes("sun") || lowerPhrase.includes("clear")) {
+      return "☀️ Sunny";
+    } else if (lowerPhrase.includes("rain")) {
+      return "🌧️ Rainy";
+    } else if (lowerPhrase.includes("cloud") || lowerPhrase.includes("overcast")) {
+      return "☁️ Cloudy";
+    } else {
+      return "🌡️ Unknown";
+    }
+  };
 
   return (
     <div className="container">
@@ -45,10 +63,8 @@ function MonitoringDashboard({ onBack }) {
           <h3>Weather Forecast</h3>
           <ul>
             {solarData && solarData.weather && solarData.weather.forecasts ? (
-              solarData.weather.forecasts.slice(0, 3).map((day, index) => (
-                <li key={index}>
-                  {`Day ${index + 1}: ${day.day.phrase} - ${day.temperature.minimum.value}°C`}
-                </li>
+              solarData.weather.forecasts.slice(0, 5).map((day, index) => (
+                <li key={index}>{`Day ${index + 1}: ${getWeatherCondition(day)}`}</li>
               ))
             ) : (
               <li>Loading weather data...</li>
