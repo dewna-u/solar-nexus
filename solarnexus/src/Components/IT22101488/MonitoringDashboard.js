@@ -30,16 +30,8 @@ function MonitoringDashboard({ onBack }) {
           <p>{solarData ? `${solarData.totalCapacity} W` : "Loading..."}</p>
         </div>
         <div className="card">
-          <h3>Battery Status</h3>
-          <p>75% Charged</p>
-        </div>
-        <div className="card">
           <h3>Total Energy Generated</h3>
           <p>{solarData ? `${(solarData.totalCapacity * 5).toFixed(2)} kWh` : "Loading..."}</p>
-        </div>
-        <div className="card">
-          <h3>System Health</h3>
-          <p>Normal</p>
         </div>
         <div className="card">
           <h3>Weather Forecast</h3>

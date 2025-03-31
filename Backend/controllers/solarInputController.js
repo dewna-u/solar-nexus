@@ -2,6 +2,54 @@ const SolarInput = require("../models/SolarInput.js");
 const axios = require("axios");
 
 // Add new solar input data with weather
+// exports.addSolarInput = async (req, res) => {
+//   try {
+//     const { numPanels, panelCapacity, location } = req.body;
+
+//     if (!numPanels || !panelCapacity || !location) {
+//       return res.status(400).json({ message: "All fields are required" });
+//     }
+
+//     // Calculate total capacity
+//     const totalCapacity = numPanels * panelCapacity;
+
+//     // Fetch weather data
+//     const azureApiKey = process.env.AZURE_WEATHER_API_KEY;
+//     if (!azureApiKey) {
+//       return res.status(500).json({ message: "Azure API key is missing" });
+//     }
+
+//     let weatherData = null;
+//     try {
+//       // Convert location to coordinates
+//       const geoUrl = `https://atlas.microsoft.com/search/address/json?api-version=1.0&subscription-key=${azureApiKey}&query=${encodeURIComponent(location)}`;
+//       const geoResponse = await axios.get(geoUrl);
+
+//       if (!geoResponse.data.results.length) {
+//         return res.status(400).json({ message: "Invalid location" });
+//       }
+
+//       const { position } = geoResponse.data.results[0];
+//       const weatherUrl = `https://atlas.microsoft.com/weather/forecast/daily/json?api-version=1.1&query=${position.lat},${position.lon}&subscription-key=${azureApiKey}`;
+      
+//       const weatherResponse = await axios.get(weatherUrl);
+//       weatherData = weatherResponse.data;
+//     } catch (error) {
+//       console.error("⚠️ Weather API error:", error.message);
+//       weatherData = { error: "Failed to fetch weather data" };
+//     }
+
+//     // Save to database
+//     const newInput = new SolarInput({ numPanels, panelCapacity, totalCapacity, location, weather: weatherData });
+//     await newInput.save();
+
+//     res.status(201).json({ message: "Solar input saved successfully!", data: newInput });
+//   } catch (error) {
+//     console.error("🔥 Error saving solar input:", error.message);
+//     res.status(500).json({ message: "Error saving data", error: error.message });
+//   }
+// };
+// Add new solar input data with weather
 exports.addSolarInput = async (req, res) => {
   try {
     const { numPanels, panelCapacity, location } = req.body;
@@ -10,28 +58,27 @@ exports.addSolarInput = async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // Calculate total capacity
     const totalCapacity = numPanels * panelCapacity;
 
-    // Fetch weather data
-    const azureApiKey = process.env.AZURE_WEATHER_API_KEY;
-    if (!azureApiKey) {
-      return res.status(500).json({ message: "Azure API key is missing" });
+    const openWeatherApiKey = process.env.OPENWEATHER_API_KEY || "2f784c2a0eefce874b45136236d374e8";
+    if (!openWeatherApiKey) {
+      return res.status(500).json({ message: "OpenWeather API key is missing" });
     }
 
     let weatherData = null;
     try {
-      // Convert location to coordinates
-      const geoUrl = `https://atlas.microsoft.com/search/address/json?api-version=1.0&subscription-key=${azureApiKey}&query=${encodeURIComponent(location)}`;
+      // Get geocoding info from location name
+      const geoUrl = `http://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(location)}&limit=1&appid=${openWeatherApiKey}`;
       const geoResponse = await axios.get(geoUrl);
 
-      if (!geoResponse.data.results.length) {
+      if (!geoResponse.data.length) {
         return res.status(400).json({ message: "Invalid location" });
       }
 
-      const { position } = geoResponse.data.results[0];
-      const weatherUrl = `https://atlas.microsoft.com/weather/forecast/daily/json?api-version=1.1&query=${position.lat},${position.lon}&subscription-key=${azureApiKey}`;
-      
+      const { lat, lon } = geoResponse.data[0];
+
+      // Fetch daily weather forecast for the coordinates
+      const weatherUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${openWeatherApiKey}&units=metric`;
       const weatherResponse = await axios.get(weatherUrl);
       weatherData = weatherResponse.data;
     } catch (error) {
@@ -39,8 +86,14 @@ exports.addSolarInput = async (req, res) => {
       weatherData = { error: "Failed to fetch weather data" };
     }
 
-    // Save to database
-    const newInput = new SolarInput({ numPanels, panelCapacity, totalCapacity, location, weather: weatherData });
+    const newInput = new SolarInput({
+      numPanels,
+      panelCapacity,
+      totalCapacity,
+      location,
+      weather: weatherData,
+    });
+
     await newInput.save();
 
     res.status(201).json({ message: "Solar input saved successfully!", data: newInput });
