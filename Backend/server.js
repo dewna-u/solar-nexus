@@ -6,6 +6,8 @@ const bodyParser = require("body-parser");
 
 const solarInputRoutes = require("./routes/solarInputs.js");
 const membershipRoutes = require("./routes/membershipRoutes.js");
+const contact = require("./routes/contactRoutes.js");
+const feedback = require("./routes/feedbackRoute.js");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -20,6 +22,8 @@ app.get("/", (req, res) => {
 });
 app.use("/api/solarInputs", solarInputRoutes);
 app.use("/api/membership", membershipRoutes); // Add membership routes
+app.use("/api/", contact);
+app.use("/api/feedback/", feedback);
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })

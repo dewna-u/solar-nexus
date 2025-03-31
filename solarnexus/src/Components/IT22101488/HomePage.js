@@ -23,6 +23,9 @@ function HomePage() {
   const onGoToFeedbackAdmin = () => {
     window.location.href = "/FeedbackAdmin";
   };
+  const onGoToContactAdmin = () => {
+    window.location.href = "/ContactAdmin.js";
+  };
 
   return (
     <div>
@@ -51,6 +54,9 @@ function HomePage() {
           </button>
           <button className="home-btn" onClick={onGoToFeedbackAdmin}>
             FeedbackAdmin Page
+          </button>
+          <button className="home-btn" onClick={onGoToContactAdmin}>
+            ContactAdmin Page
           </button>
           
         </div>
