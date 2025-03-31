@@ -7,6 +7,7 @@ const bodyParser = require("body-parser");
 const solarInputRoutes = require("./routes/solarInputs.js");
 const membershipRoutes = require("./routes/membershipRoutes"); // Assuming you have membership routes
 const connectDB = require("./config/db.js"); // Import the connectDB function
+const payment = require("./routes/paymentRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -27,6 +28,7 @@ app.get("/", (req, res) => {
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/solarInputs", solarInputRoutes);
 app.use("/api/membership", membershipRoutes); // Add membership routes
+app.use("/api/payment", payment);
 
 // Global Error Handling Middleware
 app.use((err, req, res, next) => {

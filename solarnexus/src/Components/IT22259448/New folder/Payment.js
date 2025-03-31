@@ -66,7 +66,7 @@ function PaymentPage({ onBack }) {
             Credit/Debit Card
           </label>
           <label>
-            <input type="radio" name="paymentMethod" value="paypal" checked={paymentMethod === "paypal"} onChange={() => setPaymentMethod("paypal")} />
+            <input type="radio" name="paymentMethod" value="debit" checked={paymentMethod === "paypal"} onChange={() => setPaymentMethod("paypal")} />
             PayPal
           </label>
         </div>

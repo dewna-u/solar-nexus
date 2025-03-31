@@ -1,5 +1,5 @@
 // controllers/membershipController.js
-const Membership = require("../models/membershipModel");
+const Membership = require("../models/Membership");
 
 // Get Membership Details
 exports.getMembershipDetails = async (req, res) => {

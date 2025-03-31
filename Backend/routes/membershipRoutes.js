@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const Membership = require("../models/membershipModel");
+const Membership = require("../models/Membership");
 
 // @route   POST /api/membership
 // @desc    Save membership plan to database
