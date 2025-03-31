@@ -21,7 +21,7 @@ function MembershipPage({ onProceedToPayment, onBack }) {
         },
         body: JSON.stringify(selectedPlanData),
       });
-      
+
       if (response.ok) {
         alert("Membership plan submitted successfully!");
       } else {
@@ -58,7 +58,13 @@ function MembershipPage({ onProceedToPayment, onBack }) {
 
       <button
         className="proceed-btn"
-        onClick={() => onProceedToPayment(selectedPlan)}
+        onClick={() => {
+          if (typeof onProceedToPayment === "function") {
+            onProceedToPayment(selectedPlan);
+          } else {
+            console.warn("onProceedToPayment is not a function.");
+          }
+        }}
         disabled={!selectedPlan}
       >
         Proceed to Payment
@@ -72,5 +78,10 @@ function MembershipPage({ onProceedToPayment, onBack }) {
     </div>
   );
 }
+
+// Set a default function for safety
+MembershipPage.defaultProps = {
+  onProceedToPayment: () => console.warn("onProceedToPayment function not provided!"),
+};
 
 export default MembershipPage;
