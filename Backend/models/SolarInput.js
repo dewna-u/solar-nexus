@@ -1,3 +1,4 @@
+//models/SolarInput.js
 const mongoose = require("mongoose");
 
 const SolarInputSchema = new mongoose.Schema({

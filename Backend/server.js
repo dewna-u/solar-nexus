@@ -40,7 +40,7 @@ app.use("/api/solarInputs", require("./routes/solarInputs"));
 app.use("/api/auth", authRoutes);
 app.use('/api', contactRoutes);
 app.use('/api/contact', contactAdminRoutes);
-app.use("/api/chatbot", chatbotRoutes);
+app.use("/api/chatbot", require("./routes/chatbot.js"));
 // app.use('/api/feedback', feedbackRoutes);
 
 // Global Error Handling Middleware
