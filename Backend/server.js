@@ -4,21 +4,16 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 
-const solarInputRoutes = require("./routes/solarInputs.js");
+const solarInputRoutes = require("./routes/solarInputs");
 const membershipRoutes = require("./routes/membershipRoutes");
-<<<<<<< Updated upstream
 const paymentRoutes = require("./routes/paymentRoutes");
 const authRoutes = require("./routes/authRoutes");
 const contactRoutes = require('./routes/contactRoutes');
 const contactAdminRoutes = require('./routes/contactAdminRoute');
+const chatbotRoutes = require("./routes/chatbot");
+
+
 // const feedbackRoutes = require('./routes/');
-=======
-// const paymentRoutes = require("./routes/paymentRoutes");
-const authRoutes = require("./routes/authRoutes");
-// const contactRoutes = require('./routes/contactRoutes');
-const contactAdminRoutes = require('./routes/contactAdminRoutes');
-// const feedbackRoutes = require('./routes/feedbackRoutes');
->>>>>>> Stashed changes
 
 
 const connectDB = require("./config/db.js"); // Import the connectDB function
@@ -40,18 +35,12 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/membership", membershipRoutes);
-<<<<<<< Updated upstream
 app.use("/api/payment", require("./routes/paymentRoutes"));
-app.use("/api/solarInputs", solarInputRoutes);
+app.use("/api/solarInputs", require("./routes/solarInputs"));
 app.use("/api/auth", authRoutes);
 app.use('/api', contactRoutes);
-=======
-// app.use("/api/payment", require("./routes/paymentRoutes"));
-app.use("/api/solarInputs", solarInputRoutes);
-app.use("/api/auth", authRoutes);
-// app.use('/api', contactRoutes);
->>>>>>> Stashed changes
 app.use('/api/contact', contactAdminRoutes);
+app.use("/api/chatbot", chatbotRoutes);
 // app.use('/api/feedback', feedbackRoutes);
 
 // Global Error Handling Middleware

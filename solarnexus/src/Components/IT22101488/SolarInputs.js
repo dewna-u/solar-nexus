@@ -1,18 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import {
-  Container,
-  TextField,
-  Button,
-  Typography,
-  Box,
-  MenuItem,
-  Select,
-  InputLabel,
-  FormControl,
-  Paper,
-} from "@mui/material";
+import "./SolarInputs.css"; // Import your custom styles
 
 function SolarInputs() {
   const [formData, setFormData] = useState({
@@ -37,134 +26,76 @@ function SolarInputs() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const payload = {
+      numPanels: parseInt(formData.numPanels),
+      panelCapacity: parseFloat(formData.panelCapacity),
+      location: formData.location,
+    };
+
+    console.log("🚀 Submitting form:", payload);
+
     try {
-      const response = await axios.post("http://localhost:5000/api/solarInputs/add", formData);
+      const response = await axios.post("http://localhost:5000/api/solarInputs/add", payload, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
       if (response.status === 201) {
-        navigate("/MonitoringDashboard", { state: { weatherData: response.data.data.weather } });
+        console.log("✅ Success:", response.data);
+        navigate("/MonitoringDashboard", {
+          state: { weatherData: response.data.data.weather }
+        });
       }
     } catch (error) {
-      console.error("Error submitting form:", error.response?.data?.message || error.message);
+      console.error("❌ Error submitting form:", error.response?.data?.message || error.message);
+      alert("Submission failed: " + (error.response?.data?.message || error.message));
     }
   };
 
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        backgroundImage: "url('../IT22101488/bigstock-Solar-panel-against-blue-sky-16564781-1\ \(1\).jpg')",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        py: 6,
-      }}
-    >
-      <Container maxWidth="sm">
-        <Paper
-          elevation={6}
-          sx={{
-            p: 4,
-            borderRadius: 4,
-            background: "rgba(255, 255, 255, 0.75)",
-            backdropFilter: "blur(10px)",
-            boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
-          }}
-        >
-          <Typography
-            variant="h4"
-            textAlign="center"
-            gutterBottom
-            sx={{ fontWeight: 600 }}
+    <div className="solar-inputs-bg">
+      <div className="solar-form-wrapper">
+        <h2>Solar Panel Inputs</h2>
+        <form onSubmit={handleSubmit} className="solar-form">
+          <input
+            type="number"
+            name="numPanels"
+            placeholder="Number of Solar Panels"
+            value={formData.numPanels}
+            onChange={handleChange}
+            required
+          />
+
+          <input
+            type="number"
+            name="panelCapacity"
+            placeholder="Capacity of Each Panel (kW)"
+            value={formData.panelCapacity}
+            onChange={handleChange}
+            required
+          />
+
+          <select
+            name="location"
+            value={formData.location}
+            onChange={handleChange}
+            required
           >
-            Solar Panel Inputs
-          </Typography>
+            <option value="">Select District in Sri Lanka</option>
+            {sriLankaDistricts.map((district) => (
+              <option key={district} value={district}>{district}</option>
+            ))}
+          </select>
 
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            sx={{ display: "flex", flexDirection: "column", gap: 3, mt: 3 }}
-          >
-            <TextField
-              label="Number of Solar Panels"
-              type="number"
-              name="numPanels"
-              variant="outlined"
-              fullWidth
-              value={formData.numPanels}
-              onChange={handleChange}
-              required
-              sx={{ borderRadius: 2 }}
-            />
-
-            <TextField
-              label="Capacity of Each Panel (kW)"
-              type="number"
-              name="panelCapacity"
-              variant="outlined"
-              fullWidth
-              value={formData.panelCapacity}
-              onChange={handleChange}
-              required
-              sx={{ borderRadius: 2 }}
-            />
-
-            <FormControl fullWidth required>
-              <InputLabel>Location (District in Sri Lanka)</InputLabel>
-              <Select
-                name="location"
-                value={formData.location}
-                onChange={handleChange}
-                label="Location (District in Sri Lanka)"
-                sx={{ borderRadius: 2 }}
-              >
-                {sriLankaDistricts.map((district) => (
-                  <MenuItem key={district} value={district}>
-                    {district}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-
-            <Button
-              variant="contained"
-              color="primary"
-              type="submit"
-              fullWidth
-              sx={{
-                mt: 2,
-                py: 1.5,
-                fontWeight: "bold",
-                borderRadius: 2,
-                textTransform: "none",
-                transition: "0.3s",
-                ":hover": {
-                  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.2)",
-                },
-              }}
-            >
-              Submit
-            </Button>
-
-            <Button
-              variant="outlined"
-              color="secondary"
-              fullWidth
-              sx={{
-                py: 1.5,
-                borderRadius: 2,
-                textTransform: "none",
-                fontWeight: "bold",
-              }}
-              onClick={() => navigate("/MonitoringDashboard")}
-            >
-              Monitor
-            </Button>
-          </Box>
-        </Paper>
-      </Container>
-    </Box>
+          <button type="submit" className="submit-btn">Submit</button>
+          <button type="button" className="monitor-btn" onClick={() => navigate("/MonitoringDashboard")}>
+            Monitor
+          </button>
+        </form>
+      </div>
+    </div>
   );
 }
 

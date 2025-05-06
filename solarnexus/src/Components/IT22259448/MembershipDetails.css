@@ -1,0 +1,61 @@
+.membership-box {
+    background: rgba(0, 0, 0, 0.8);
+    padding: 30px;
+    border-radius: 15px;
+    width: 350px;
+    text-align: center;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+    color: white;
+  }
+  
+  h2 {
+    margin-bottom: 15px;
+  }
+  
+  ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .active {
+    color: #28a745;
+    font-weight: bold;
+  }
+  
+  .cancelled {
+    color: red;
+    font-weight: bold;
+  }
+  
+  button {
+    background: #007bff;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-top: 15px;
+    transition: 0.3s;
+  }
+  
+  button:hover {
+    background: #0056b3;
+  }
+  
+  .change-btn {
+    background: #ffc107;
+  }
+  
+  .change-btn:hover {
+    background: #e0a800;
+  }
+  
+  .cancel-btn {
+    background: #dc3545;
+  }
+  
+  .cancel-btn:hover {
+    background: #c82333;
+  }
+  

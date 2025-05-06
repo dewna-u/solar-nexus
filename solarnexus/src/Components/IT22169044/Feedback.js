@@ -170,18 +170,7 @@ const Feedback = () => {
             size="large"
           />
         </Box>
-        <FormControl component="fieldset" sx={{ mt: 3 }}>
-          <FormLabel component="legend">Would you like to share this publicly?</FormLabel>
-          <RadioGroup
-            row
-            name="sharePublicly"
-            value={formData.sharePublicly}
-            onChange={handleChange}
-          >
-            <FormControlLabel value={true} control={<Radio />} label="Yes" />
-            <FormControlLabel value={false} control={<Radio />} label="No" />
-          </RadioGroup>
-        </FormControl>
+        
         <Button
           type="submit"
           variant="contained"
@@ -221,9 +210,7 @@ const Feedback = () => {
                 <Typography variant="body2" sx={{ mb: 2 }}>
                   <strong>Rating:</strong> {feedback.rating} / 5
                 </Typography>
-                <Typography variant="body2" sx={{ mb: 1 }}>
-                  <strong>Share Publicly:</strong> {feedback.sharePublicly ? 'Yes' : 'No'}
-                </Typography>
+               
 
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
                   <IconButton onClick={() => handleEdit(feedback._id)} color="primary" sx={{ mx: 1 }}>
