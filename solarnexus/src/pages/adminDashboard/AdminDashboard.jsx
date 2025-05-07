@@ -47,7 +47,7 @@ const UserDashboard = () => {
         <List>
           <ListItem disablePadding>
             <ListItemButton onClick={() => navigate("/userlist")}>
-              <ListItemText primary="User Profile" />
+              <ListItemText primary="Admin Profile" />
             </ListItemButton>
           </ListItem>
           <ListItem disablePadding>
@@ -74,11 +74,11 @@ const UserDashboard = () => {
       </Drawer>
 
       {/* Main Content */}
-      <Box component="main" sx={{ flexGrow: 1, p: 3, ml: "240px" }}>
+      <Box component="main" sx={{ flexGrow: 1, p: 5, ml: "40px" }}>
         <AppBar position="static">
           <Toolbar>
             <Typography variant="h6" sx={{ flexGrow: 1 }}>
-              User Dashboard
+              Admin Dashboard
             </Typography>
             <Button color="inherit" onClick={handleLogout}>
               Logout
@@ -87,10 +87,10 @@ const UserDashboard = () => {
         </AppBar>
 
         <Typography variant="h4" sx={{ mt: 3 }}>
-          Welcome to Your Dashboard
+          Welcome to Admin Dashboard
         </Typography>
         <Typography variant="body1" sx={{ mt: 2 }}>
-          View your profile, track orders, and get support.
+          View user profiles, Solar Monitoring, Contact Us,Payment,and Feedback.
         </Typography>
       </Box>
     </Box>

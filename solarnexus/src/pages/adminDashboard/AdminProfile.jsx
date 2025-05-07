@@ -54,10 +54,13 @@ const UserProfile = () => {
             <Typography variant="h6">Mobile Number: {user.mobilenumber}</Typography>
             <Typography variant="h6">Email: {user.email}</Typography>
           </>
+          
         ) : null}
       </Box>
     </Container>
+    
   );
 };
+
 
 export default UserProfile;

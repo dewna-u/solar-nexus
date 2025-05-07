@@ -144,6 +144,10 @@ const Login = () => {
             <Button onClick={() => navigate("/forgotpassword")} color="secondary">
               Forgot Password?
             </Button>
+           Create Account{" "}
+            <Button onClick={() => navigate("/register")} color="secondary" >
+               Register
+            </Button>
           </Typography>
         </Box>
       </Grid>
