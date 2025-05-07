@@ -1,3 +1,4 @@
+// MonitoringDashboard.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Bar } from "react-chartjs-2";
@@ -16,26 +17,24 @@ ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
 function MonitoringDashboard({ onBack }) {
   const [solarData, setSolarData] = useState(null);
+  const [dates, setDates] = useState({ today: "", day1: "", day2: "" });
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/solarInputs");
-        if (response.data.length > 0) {
-          setSolarData(response.data[response.data.length - 1]);
-        }
+        const { data } = await axios.get("http://localhost:5000/api/solarInputs");
+        // data = { input: SolarInputDoc, dates: { today, day1, day2 } }
+        setSolarData(data.input);
+        setDates(data.dates);
       } catch (error) {
         console.error("❌ Error fetching solar data:", error);
       }
     };
-
     fetchData();
   }, []);
 
-  const totalEnergy = (forecast) => {
-    if (!forecast) return "0.0";
-    return (forecast.morning + forecast.noon + forecast.night).toFixed(1);
-  };
+  const totalEnergy = (f) =>
+    f ? (f.morning + f.noon + f.night).toFixed(1) : "0.0";
 
   const exportToPDF = () => {
     const doc = new jsPDF();
@@ -46,29 +45,29 @@ function MonitoringDashboard({ onBack }) {
       startY: 30,
       head: [["Field", "Value"]],
       body: [
+        ["Date", dates.today],
         ["Number of Panels", solarData?.numPanels || ""],
         ["Panel Capacity (kW)", solarData?.panelCapacity || ""],
         ["Location", solarData?.location || ""],
         ["Real-time Output", solarData?.totalCapacity + " W"],
-        ["Estimated Today", (solarData?.totalCapacity * 5).toFixed(1) + " kWh"],
+        [`Estimated Energy (${dates.today})`, (solarData?.totalCapacity * 5).toFixed(1) + " kWh"],
       ],
     });
 
-    const secondTableY = doc.lastAutoTable.finalY + 10;
-
+    const y = doc.lastAutoTable.finalY + 10;
     autoTable(doc, {
-      startY: secondTableY,
-      head: [["Time", "Morning", "Noon", "Night", "Total"]],
+      startY: y,
+      head: [["Date", "Morning", "Noon", "Night", "Total"]],
       body: [
         [
-          "Day 1",
+          dates.day1,
           `${solarData?.forecast?.day1?.morning?.toFixed(1) || "0"} kWh`,
           `${solarData?.forecast?.day1?.noon?.toFixed(1) || "0"} kWh`,
           `${solarData?.forecast?.day1?.night?.toFixed(1) || "0"} kWh`,
           `${totalEnergy(solarData?.forecast?.day1)} kWh`,
         ],
         [
-          "Day 2",
+          dates.day2,
           `${solarData?.forecast?.day2?.morning?.toFixed(1) || "0"} kWh`,
           `${solarData?.forecast?.day2?.noon?.toFixed(1) || "0"} kWh`,
           `${solarData?.forecast?.day2?.night?.toFixed(1) || "0"} kWh`,
@@ -84,8 +83,8 @@ function MonitoringDashboard({ onBack }) {
     labels: ["Morning", "Noon", "Night"],
     datasets: [
       {
-        label: "Day 1",
-        data: solarData?.forecast
+        label: dates.day1,
+        data: solarData
           ? [
               solarData.forecast.day1.morning,
               solarData.forecast.day1.noon,
@@ -95,8 +94,8 @@ function MonitoringDashboard({ onBack }) {
         backgroundColor: "rgba(255, 99, 132, 0.6)",
       },
       {
-        label: "Day 2",
-        data: solarData?.forecast
+        label: dates.day2,
+        data: solarData
           ? [
               solarData.forecast.day2.morning,
               solarData.forecast.day2.noon,
@@ -119,12 +118,19 @@ function MonitoringDashboard({ onBack }) {
     <div style={styles.page}>
       <h2 style={styles.title}>☀️ Solar Monitoring Dashboard</h2>
 
+      {/* Display the three dates */}
+      <div style={styles.dateBar}>
+        <span><strong>Today:</strong> {dates.today}</span>
+        <span><strong>Day 1:</strong> {dates.day1}</span>
+        <span><strong>Day 2:</strong> {dates.day2}</span>
+      </div>
+
       <div style={{ textAlign: "right", marginBottom: "20px" }}>
         <button onClick={exportToPDF} style={styles.pdfButton}>📄 Export to PDF</button>
       </div>
 
       <div style={styles.grid}>
-        {[
+        {[ 
           {
             title: "User Input Details",
             content: solarData && (
@@ -137,60 +143,78 @@ function MonitoringDashboard({ onBack }) {
           },
           {
             title: "Power Output",
-            content: <p style={styles.largeNumber}>
-              {solarData ? `${solarData.totalCapacity} W` : "Loading..."}
-            </p>
+            content: (
+              <p style={styles.largeNumber}>
+                {solarData ? `${solarData.totalCapacity} W` : "Loading..."}
+              </p>
+            )
           },
           {
-            title: "Today's Estimated Energy",
-            content: <p style={styles.largeNumber}>
-              {solarData ? `${(solarData.totalCapacity * 5).toFixed(1)} kWh` : "Loading..."}
-            </p>
+            title: `Estimated Energy (${dates.today})`,
+            content: (
+              <p style={styles.largeNumber}>
+                {solarData
+                  ? `${(solarData.totalCapacity * 5).toFixed(1)} kWh`
+                  : "Loading..."}
+              </p>
+            )
           },
           {
-            title: "Day 1 Forecast",
+            title: `Day 1 Forecast (${dates.day1})`,
             content: solarData?.forecast?.day1 ? (
               <>
                 <div style={styles.weatherFlex}>
-                  {["morning", "noon", "night"].map((period, i) => (
-                    <div key={i}>
-                      <div>{["☀️", "🌤️", "🌙"][i]}</div>
-                      <small>{period.charAt(0).toUpperCase() + period.slice(1)}</small>
-                      <div><strong>{solarData.forecast.day1[period].toFixed(1)} kWh</strong></div>
+                  {["morning","noon","night"].map((seg,i) => (
+                    <div key={seg}>
+                      {["☀️","🌤️","🌙"][i]}<br/>
+                      <small>
+                        {seg.charAt(0).toUpperCase()+seg.slice(1)}
+                      </small><br/>
+                      <strong>
+                        {solarData.forecast.day1[seg].toFixed(1)} kWh
+                      </strong>
                     </div>
                   ))}
                 </div>
-                <p style={styles.total}>Total: {totalEnergy(solarData.forecast.day1)} kWh</p>
+                <p style={styles.total}>
+                  Total: {totalEnergy(solarData.forecast.day1)} kWh
+                </p>
               </>
-            ) : <p>Loading...</p>
+            ) : <p>Loading…</p>
           },
           {
-            title: "Day 2 Forecast",
+            title: `Day 2 Forecast (${dates.day2})`,
             content: solarData?.forecast?.day2 ? (
               <>
                 <div style={styles.weatherFlex}>
-                  {["morning", "noon", "night"].map((period, i) => (
-                    <div key={i}>
-                      <div>{["☀️", "🌤️", "🌙"][i]}</div>
-                      <small>{period.charAt(0).toUpperCase() + period.slice(1)}</small>
-                      <div><strong>{solarData.forecast.day2[period].toFixed(1)} kWh</strong></div>
+                  {["morning","noon","night"].map((seg,i) => (
+                    <div key={seg}>
+                      {["☀️","🌤️","🌙"][i]}<br/>
+                      <small>
+                        {seg.charAt(0).toUpperCase()+seg.slice(1)}
+                      </small><br/>
+                      <strong>
+                        {solarData.forecast.day2[seg].toFixed(1)} kWh
+                      </strong>
                     </div>
                   ))}
                 </div>
-                <p style={styles.total}>Total: {totalEnergy(solarData.forecast.day2)} kWh</p>
+                <p style={styles.total}>
+                  Total: {totalEnergy(solarData.forecast.day2)} kWh
+                </p>
               </>
-            ) : <p>Loading...</p>
+            ) : <p>Loading…</p>
           },
           {
-            title: "Energy Forecast Comparison",
+            title: "Forecast Comparison",
             content: <Bar data={chartData} options={chartOptions} />
           }
-        ].map((section, index) => (
-          <div style={styles.card} key={index}>
+        ].map((section, idx) => (
+          <div style={styles.card} key={idx}>
             <h3 style={styles.cardTitle}>{section.title}</h3>
             {section.content}
           </div>
-        ))}
+        )) }
       </div>
 
       <button style={styles.button} onClick={onBack}>⬅ Back</button>
@@ -207,10 +231,13 @@ const styles = {
     color: "#333",
     textAlign: "center",
   },
-  title: {
-    fontSize: "32px",
-    fontWeight: 600,
-    marginBottom: "30px",
+  title: { fontSize: "32px", fontWeight: 600, marginBottom: "10px" },
+  dateBar: {
+    display: "flex",
+    justifyContent: "center",
+    gap: "24px",
+    marginBottom: "20px",
+    color: "#555",
   },
   grid: {
     display: "grid",
@@ -220,32 +247,21 @@ const styles = {
     margin: "0 auto",
   },
   card: {
-    background: "rgba(255, 255, 255, 0.35)",
+    background: "rgba(255,255,255,0.35)",
     borderRadius: "16px",
     padding: "20px",
     backdropFilter: "blur(8px)",
     boxShadow: "0 6px 30px rgba(0,0,0,0.1)",
-    color: "#000",
   },
-  cardTitle: {
-    fontSize: "20px",
-    marginBottom: "12px",
-  },
-  largeNumber: {
-    fontSize: "30px",
-    fontWeight: "bold",
-  },
+  cardTitle: { fontSize: "20px", marginBottom: "12px" },
+  largeNumber: { fontSize: "30px", fontWeight: "bold" },
   weatherFlex: {
     display: "flex",
     justifyContent: "space-around",
     gap: "12px",
     fontSize: "14px",
   },
-  total: {
-    marginTop: "10px",
-    fontWeight: "bold",
-    color: "#444",
-  },
+  total: { marginTop: "10px", fontWeight: "bold", color: "#444" },
   button: {
     marginTop: "30px",
     padding: "10px 24px",
@@ -267,10 +283,7 @@ const styles = {
     border: "none",
     cursor: "pointer",
   },
-  text: {
-    fontSize: "16px",
-    lineHeight: "1.6",
-  },
+  text: { fontSize: "16px", lineHeight: "1.6" },
 };
 
 export default MonitoringDashboard;

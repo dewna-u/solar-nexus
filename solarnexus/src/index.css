@@ -14,3 +14,46 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* index.css */
+
+/* 1) Make box-sizing inherit everywhere */
+html {
+  box-sizing: border-box;
+  font-size: 16px;             /* base font-size */
+}
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+
+/* 2) Ensure full-width on mobile */
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100vh;
+  font-family: "Segoe UI", sans-serif;
+}
+
+/* 3) Utility responsive typography */
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  line-height: 1.2;
+}
+
+/* 4) Images & videos scale */
+img, video {
+  max-width: 100%;
+  height: auto;
+}
+
+/* 5) Make links tappable */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* 6) Optional: smaller font on very small screens */
+@media (max-width: 360px) {
+  html { font-size: 14px; }
+}
