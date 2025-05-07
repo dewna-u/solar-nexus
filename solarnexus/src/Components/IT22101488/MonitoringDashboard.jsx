@@ -1,223 +1,244 @@
-// MonitoringDashboard.jsx
+// src/Components/IT22101488/MonitoringDashboard.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
-  BarElement,
   CategoryScale,
   LinearScale,
+  BarElement,
   Tooltip,
   Legend,
 } from "chart.js";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
-ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
 function MonitoringDashboard({ onBack }) {
   const [solarData, setSolarData] = useState(null);
-  const [dates, setDates] = useState({ today: "", day1: "", day2: "" });
+  const [loading, setLoading] = useState(true);
 
+  // Fetch the latest solar input on mount
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const { data } = await axios.get("http://localhost:5000/api/solarInputs");
-        // data = { input: SolarInputDoc, dates: { today, day1, day2 } }
-        setSolarData(data.input);
-        setDates(data.dates);
-      } catch (error) {
-        console.error("❌ Error fetching solar data:", error);
+        const res = await axios.get("http://localhost:5000/api/solarInputs");
+        if (Array.isArray(res.data) && res.data.length > 0) {
+          setSolarData(res.data[res.data.length - 1]);
+        }
+      } catch (err) {
+        console.error("❌ Error fetching solar data:", err);
+      } finally {
+        setLoading(false);
       }
     };
     fetchData();
   }, []);
 
-  const totalEnergy = (f) =>
-    f ? (f.morning + f.noon + f.night).toFixed(1) : "0.0";
+  // Safely compute total energy from forecast segments
+  const totalEnergy = (seg) => {
+    if (!seg) return 0;
+    return ((seg.morning || 0) + (seg.noon || 0) + (seg.night || 0)).toFixed(1);
+  };
 
+  // Export report to PDF
   const exportToPDF = () => {
+    if (!solarData) return;
     const doc = new jsPDF();
     doc.setFontSize(18);
     doc.text("Solar Forecast Report", 14, 20);
 
+    // Table 1: Inputs
     autoTable(doc, {
       startY: 30,
       head: [["Field", "Value"]],
       body: [
-        ["Date", dates.today],
-        ["Number of Panels", solarData?.numPanels || ""],
-        ["Panel Capacity (kW)", solarData?.panelCapacity || ""],
-        ["Location", solarData?.location || ""],
-        ["Real-time Output", solarData?.totalCapacity + " W"],
-        [`Estimated Energy (${dates.today})`, (solarData?.totalCapacity * 5).toFixed(1) + " kWh"],
+        ["Number of Panels", solarData.numPanels],
+        ["Panel Capacity (kW)", solarData.panelCapacity],
+        ["Location", solarData.location],
+        ["Real-time Output", `${solarData.totalCapacity} W`],
+        ["Estimated Today", `${(solarData.totalCapacity * 5).toFixed(1)} kWh`],
       ],
     });
 
-    const y = doc.lastAutoTable.finalY + 10;
-    autoTable(doc, {
-      startY: y,
-      head: [["Date", "Morning", "Noon", "Night", "Total"]],
-      body: [
-        [
-          dates.day1,
-          `${solarData?.forecast?.day1?.morning?.toFixed(1) || "0"} kWh`,
-          `${solarData?.forecast?.day1?.noon?.toFixed(1) || "0"} kWh`,
-          `${solarData?.forecast?.day1?.night?.toFixed(1) || "0"} kWh`,
-          `${totalEnergy(solarData?.forecast?.day1)} kWh`,
+    // Table 2: Forecast if available
+    if (solarData.forecast) {
+      const y = doc.lastAutoTable.finalY + 10;
+      autoTable(doc, {
+        startY: y,
+        head: [["Day", "Morning", "Noon", "Night", "Total"]],
+        body: [
+          [
+            "Tomorrow",
+            `${solarData.forecast.day1.morning.toFixed(1)} kWh`,
+            `${solarData.forecast.day1.noon.toFixed(1)} kWh`,
+            `${solarData.forecast.day1.night.toFixed(1)} kWh`,
+            `${totalEnergy(solarData.forecast.day1)} kWh`,
+          ],
+          [
+            "Day After",
+            `${solarData.forecast.day2.morning.toFixed(1)} kWh`,
+            `${solarData.forecast.day2.noon.toFixed(1)} kWh`,
+            `${solarData.forecast.day2.night.toFixed(1)} kWh`,
+            `${totalEnergy(solarData.forecast.day2)} kWh`,
+          ],
         ],
-        [
-          dates.day2,
-          `${solarData?.forecast?.day2?.morning?.toFixed(1) || "0"} kWh`,
-          `${solarData?.forecast?.day2?.noon?.toFixed(1) || "0"} kWh`,
-          `${solarData?.forecast?.day2?.night?.toFixed(1) || "0"} kWh`,
-          `${totalEnergy(solarData?.forecast?.day2)} kWh`,
-        ],
-      ],
-    });
+      });
+    }
 
     doc.save("solar_forecast_report.pdf");
   };
 
-  const chartData = {
-    labels: ["Morning", "Noon", "Night"],
-    datasets: [
-      {
-        label: dates.day1,
-        data: solarData
-          ? [
+  // Prepare chart data (only if forecast exists)
+  const chartData = solarData?.forecast
+    ? {
+        labels: ["Morning", "Noon", "Night"],
+        datasets: [
+          {
+            label: "Tomorrow",
+            data: [
               solarData.forecast.day1.morning,
               solarData.forecast.day1.noon,
               solarData.forecast.day1.night,
-            ]
-          : [],
-        backgroundColor: "rgba(255, 99, 132, 0.6)",
-      },
-      {
-        label: dates.day2,
-        data: solarData
-          ? [
+            ],
+            backgroundColor: "rgba(255, 99, 132, 0.6)",
+          },
+          {
+            label: "Day After",
+            data: [
               solarData.forecast.day2.morning,
               solarData.forecast.day2.noon,
               solarData.forecast.day2.night,
-            ]
-          : [],
-        backgroundColor: "rgba(54, 162, 235, 0.6)",
-      },
-    ],
-  };
+            ],
+            backgroundColor: "rgba(54, 162, 235, 0.6)",
+          },
+        ],
+      }
+    : null;
 
   const chartOptions = {
     responsive: true,
-    plugins: {
-      legend: { position: "bottom" },
-    },
+    plugins: { legend: { position: "bottom" } },
   };
+
+  if (loading) {
+    return <p style={{ textAlign: "center", marginTop: 40 }}>Loading data…</p>;
+  }
+
+  if (!solarData) {
+    return (
+      <p style={{ textAlign: "center", marginTop: 40 }}>
+        No solar panel data found.
+      </p>
+    );
+  }
 
   return (
     <div style={styles.page}>
       <h2 style={styles.title}>☀️ Solar Monitoring Dashboard</h2>
 
-      {/* Display the three dates */}
-      <div style={styles.dateBar}>
-        <span><strong>Today:</strong> {dates.today}</span>
-        <span><strong>Day 1:</strong> {dates.day1}</span>
-        <span><strong>Day 2:</strong> {dates.day2}</span>
-      </div>
-
-      <div style={{ textAlign: "right", marginBottom: "20px" }}>
-        <button onClick={exportToPDF} style={styles.pdfButton}>📄 Export to PDF</button>
+      <div style={{ textAlign: "right", marginBottom: 20 }}>
+        <button onClick={exportToPDF} style={styles.pdfButton}>
+          📄 Export to PDF
+        </button>
       </div>
 
       <div style={styles.grid}>
-        {[ 
-          {
-            title: "User Input Details",
-            content: solarData && (
-              <p style={styles.text}>
-                <strong>Panels:</strong> {solarData.numPanels}<br />
-                <strong>Capacity:</strong> {solarData.panelCapacity} kW<br />
-                <strong>District:</strong> {solarData.location}
+        {/* User Inputs */}
+        <div style={styles.card}>
+          <h3 style={styles.cardTitle}>User Input Details</h3>
+          <p style={styles.text}>
+            <strong>Panels:</strong> {solarData.numPanels}
+            <br />
+            <strong>Capacity:</strong> {solarData.panelCapacity} kW
+            <br />
+            <strong>District:</strong> {solarData.location}
+          </p>
+        </div>
+
+        {/* Real-time Output */}
+        <div style={styles.card}>
+          <h3 style={styles.cardTitle}>Power Output</h3>
+          <p style={styles.largeNumber}>
+            {solarData.totalCapacity} W
+          </p>
+        </div>
+
+        {/* Today’s Estimate */}
+        <div style={styles.card}>
+          <h3 style={styles.cardTitle}>Today's Estimated Energy</h3>
+          <p style={styles.largeNumber}>
+            {(solarData.totalCapacity * 5).toFixed(1)} kWh
+          </p>
+        </div>
+
+        {/* Day 1 Forecast */}
+        <div style={styles.card}>
+          <h3 style={styles.cardTitle}>Tomorrow's Forecast</h3>
+          {solarData.forecast ? (
+            <>
+              <div style={styles.weatherFlex}>
+                {["morning", "noon", "night"].map((period, i) => (
+                  <div key={i}>
+                    {["☀️","🌤️","🌙"][i]}
+                    <br />
+                    <small>{period.charAt(0).toUpperCase() + period.slice(1)}</small>
+                    <br />
+                    <strong>
+                      {solarData.forecast.day1[period].toFixed(1)} kWh
+                    </strong>
+                  </div>
+                ))}
+              </div>
+              <p style={styles.total}>
+                Total: {totalEnergy(solarData.forecast.day1)} kWh
               </p>
-            )
-          },
-          {
-            title: "Power Output",
-            content: (
-              <p style={styles.largeNumber}>
-                {solarData ? `${solarData.totalCapacity} W` : "Loading..."}
+            </>
+          ) : (
+            <p>No forecast data</p>
+          )}
+        </div>
+
+        {/* Day 2 Forecast */}
+        <div style={styles.card}>
+          <h3 style={styles.cardTitle}>Day After Forecast</h3>
+          {solarData.forecast ? (
+            <>
+              <div style={styles.weatherFlex}>
+                {["morning", "noon", "night"].map((period, i) => (
+                  <div key={i}>
+                    {["☀️","🌤️","🌙"][i]}
+                    <br />
+                    <small>{period.charAt(0).toUpperCase() + period.slice(1)}</small>
+                    <br />
+                    <strong>
+                      {solarData.forecast.day2[period].toFixed(1)} kWh
+                    </strong>
+                  </div>
+                ))}
+              </div>
+              <p style={styles.total}>
+                Total: {totalEnergy(solarData.forecast.day2)} kWh
               </p>
-            )
-          },
-          {
-            title: `Estimated Energy (${dates.today})`,
-            content: (
-              <p style={styles.largeNumber}>
-                {solarData
-                  ? `${(solarData.totalCapacity * 5).toFixed(1)} kWh`
-                  : "Loading..."}
-              </p>
-            )
-          },
-          {
-            title: `Day 1 Forecast (${dates.day1})`,
-            content: solarData?.forecast?.day1 ? (
-              <>
-                <div style={styles.weatherFlex}>
-                  {["morning","noon","night"].map((seg,i) => (
-                    <div key={seg}>
-                      {["☀️","🌤️","🌙"][i]}<br/>
-                      <small>
-                        {seg.charAt(0).toUpperCase()+seg.slice(1)}
-                      </small><br/>
-                      <strong>
-                        {solarData.forecast.day1[seg].toFixed(1)} kWh
-                      </strong>
-                    </div>
-                  ))}
-                </div>
-                <p style={styles.total}>
-                  Total: {totalEnergy(solarData.forecast.day1)} kWh
-                </p>
-              </>
-            ) : <p>Loading…</p>
-          },
-          {
-            title: `Day 2 Forecast (${dates.day2})`,
-            content: solarData?.forecast?.day2 ? (
-              <>
-                <div style={styles.weatherFlex}>
-                  {["morning","noon","night"].map((seg,i) => (
-                    <div key={seg}>
-                      {["☀️","🌤️","🌙"][i]}<br/>
-                      <small>
-                        {seg.charAt(0).toUpperCase()+seg.slice(1)}
-                      </small><br/>
-                      <strong>
-                        {solarData.forecast.day2[seg].toFixed(1)} kWh
-                      </strong>
-                    </div>
-                  ))}
-                </div>
-                <p style={styles.total}>
-                  Total: {totalEnergy(solarData.forecast.day2)} kWh
-                </p>
-              </>
-            ) : <p>Loading…</p>
-          },
-          {
-            title: "Forecast Comparison",
-            content: <Bar data={chartData} options={chartOptions} />
-          }
-        ].map((section, idx) => (
-          <div style={styles.card} key={idx}>
-            <h3 style={styles.cardTitle}>{section.title}</h3>
-            {section.content}
+            </>
+          ) : (
+            <p>No forecast data</p>
+          )}
+        </div>
+
+        {/* Chart */}
+        {chartData && (
+          <div style={styles.card}>
+            <h3 style={styles.cardTitle}>Energy Forecast Comparison</h3>
+            <Bar data={chartData} options={chartOptions} />
           </div>
-        )) }
+        )}
       </div>
 
-      <button style={styles.button} onClick={onBack}>⬅ Back</button>
+      <button style={styles.button} onClick={onBack}>
+        ⬅ Back
+      </button>
     </div>
   );
 }
@@ -231,14 +252,7 @@ const styles = {
     color: "#333",
     textAlign: "center",
   },
-  title: { fontSize: "32px", fontWeight: 600, marginBottom: "10px" },
-  dateBar: {
-    display: "flex",
-    justifyContent: "center",
-    gap: "24px",
-    marginBottom: "20px",
-    color: "#555",
-  },
+  title: { fontSize: "32px", fontWeight: 600, marginBottom: "30px" },
   grid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
@@ -252,6 +266,7 @@ const styles = {
     padding: "20px",
     backdropFilter: "blur(8px)",
     boxShadow: "0 6px 30px rgba(0,0,0,0.1)",
+    color: "#000",
   },
   cardTitle: { fontSize: "20px", marginBottom: "12px" },
   largeNumber: { fontSize: "30px", fontWeight: "bold" },
@@ -262,6 +277,15 @@ const styles = {
     fontSize: "14px",
   },
   total: { marginTop: "10px", fontWeight: "bold", color: "#444" },
+  pdfButton: {
+    padding: "8px 16px",
+    fontSize: "14px",
+    backgroundColor: "#007bff",
+    color: "#fff",
+    borderRadius: "6px",
+    border: "none",
+    cursor: "pointer",
+  },
   button: {
     marginTop: "30px",
     padding: "10px 24px",
@@ -273,15 +297,6 @@ const styles = {
     cursor: "pointer",
     boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
     backdropFilter: "blur(6px)",
-  },
-  pdfButton: {
-    padding: "8px 16px",
-    fontSize: "14px",
-    backgroundColor: "#007bff",
-    color: "#fff",
-    borderRadius: "6px",
-    border: "none",
-    cursor: "pointer",
   },
   text: { fontSize: "16px", lineHeight: "1.6" },
 };

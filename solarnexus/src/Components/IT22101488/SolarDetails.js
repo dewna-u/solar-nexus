@@ -1,3 +1,4 @@
+// SolarDetails.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import {
@@ -18,17 +19,16 @@ import {
   DialogContent,
   DialogActions,
   Chip,
-  Box,
 } from "@mui/material";
 import DownloadIcon from "@mui/icons-material/Download";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 
 function SolarDetails() {
-  const [solarInputs, setSolarInputs] = useState([]);
-  const [filteredInputs, setFilteredInputs] = useState([]);
-  const [editData, setEditData] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [solarInputs, setSolarInputs]         = useState([]);
+  const [filteredInputs, setFilteredInputs]   = useState([]);
+  const [editData, setEditData]               = useState(null);
+  const [searchTerm, setSearchTerm]           = useState("");
 
   useEffect(() => {
     fetchSolarInputs();
@@ -36,22 +36,29 @@ function SolarDetails() {
 
   const fetchSolarInputs = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/solarInputs");
-      setSolarInputs(response.data);
-      setFilteredInputs(response.data);
+      const { data } = await axios.get("http://localhost:5000/api/solarInputs");
+
+      // Normalize: if API returns { input, dates }, wrap input in array
+      let inputs = Array.isArray(data)
+        ? data
+        : data.input
+          ? [data.input]
+          : [];
+
+      setSolarInputs(inputs);
+      setFilteredInputs(inputs);
     } catch (error) {
       console.error("Error fetching solar inputs:", error);
     }
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this record?")) {
-      try {
-        await axios.delete(`http://localhost:5000/api/solarInputs/${id}`);
-        fetchSolarInputs();
-      } catch (error) {
-        console.error("Error deleting input:", error);
-      }
+    if (!window.confirm("Are you sure you want to delete this record?")) return;
+    try {
+      await axios.delete(`http://localhost:5000/api/solarInputs/${id}`);
+      fetchSolarInputs();
+    } catch (error) {
+      console.error("Error deleting input:", error);
     }
   };
 
@@ -63,11 +70,15 @@ function SolarDetails() {
     if (!editData) return;
     try {
       const updatedData = {
-        numPanels: parseInt(editData.numPanels),
-        panelCapacity: parseFloat(editData.panelCapacity),
-        location: editData.location,
+        numPanels:     parseInt(editData.numPanels, 10)   || 0,
+        panelCapacity: parseFloat(editData.panelCapacity) || 0,
+        location:      editData.location                  || "",
       };
-      await axios.put(`http://localhost:5000/api/solarInputs/${editData._id}`, updatedData);
+
+      await axios.put(
+        `http://localhost:5000/api/solarInputs/${editData._id}`,
+        updatedData
+      );
       setEditData(null);
       fetchSolarInputs();
     } catch (error) {
@@ -78,10 +89,12 @@ function SolarDetails() {
   const handleSearch = (e) => {
     const term = e.target.value.toLowerCase();
     setSearchTerm(term);
-    const filtered = solarInputs.filter((item) =>
-      item.location.toLowerCase().includes(term)
+
+    setFilteredInputs(
+      solarInputs.filter((item) =>
+        item.location.toLowerCase().includes(term)
+      )
     );
-    setFilteredInputs(filtered);
   };
 
   const generateCSV = () => {
@@ -104,21 +117,21 @@ function SolarDetails() {
       item.totalCapacity,
       item.location,
       item.forecast?.day1?.morning ?? "",
-      item.forecast?.day1?.noon ?? "",
-      item.forecast?.day1?.night ?? "",
+      item.forecast?.day1?.noon   ?? "",
+      item.forecast?.day1?.night  ?? "",
       item.forecast?.day2?.morning ?? "",
-      item.forecast?.day2?.noon ?? "",
-      item.forecast?.day2?.night ?? "",
+      item.forecast?.day2?.noon   ?? "",
+      item.forecast?.day2?.night  ?? "",
     ]);
 
     const csvContent =
       "data:text/csv;charset=utf-8," +
-      [headers, ...rows].map((e) => e.join(",")).join("\n");
+      [headers, ...rows].map((row) => row.join(",")).join("\n");
 
     const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.href = encodedUri;
-    link.download = "solar_report.csv";
+    const link       = document.createElement("a");
+    link.href        = encodedUri;
+    link.download    = "solar_report.csv";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -130,7 +143,13 @@ function SolarDetails() {
         ⚡ Solar Input Management (Admin Panel)
       </Typography>
 
-      <Grid container spacing={2} alignItems="center" justifyContent="space-between" sx={{ mb: 3 }}>
+      <Grid
+        container
+        spacing={2}
+        alignItems="center"
+        justifyContent="space-between"
+        sx={{ mb: 3 }}
+      >
         <Grid item xs={12} sm={6}>
           <TextField
             fullWidth
@@ -172,16 +191,35 @@ function SolarDetails() {
                 <TableCell>{input.panelCapacity}</TableCell>
                 <TableCell>{input.totalCapacity}</TableCell>
                 <TableCell>{input.location}</TableCell>
+
                 <TableCell>
-                  <Chip label={`🌅 ${input.forecast?.day1?.morning ?? "—"} kWh`} sx={{ mr: 1 }} />
-                  <Chip label={`🌤️ ${input.forecast?.day1?.noon ?? "—"} kWh`} sx={{ mr: 1 }} />
-                  <Chip label={`🌙 ${input.forecast?.day1?.night ?? "—"} kWh`} />
+                  <Chip
+                    label={`🌅 ${input.forecast?.day1?.morning ?? "—"} kWh`}
+                    sx={{ mr: 1 }}
+                  />
+                  <Chip
+                    label={`🌤️ ${input.forecast?.day1?.noon ?? "—"} kWh`}
+                    sx={{ mr: 1 }}
+                  />
+                  <Chip
+                    label={`🌙 ${input.forecast?.day1?.night ?? "—"} kWh`}
+                  />
                 </TableCell>
+
                 <TableCell>
-                  <Chip label={`🌅 ${input.forecast?.day2?.morning ?? "—"} kWh`} sx={{ mr: 1 }} />
-                  <Chip label={`🌤️ ${input.forecast?.day2?.noon ?? "—"} kWh`} sx={{ mr: 1 }} />
-                  <Chip label={`🌙 ${input.forecast?.day2?.night ?? "—"} kWh`} />
+                  <Chip
+                    label={`🌅 ${input.forecast?.day2?.morning ?? "—"} kWh`}
+                    sx={{ mr: 1 }}
+                  />
+                  <Chip
+                    label={`🌤️ ${input.forecast?.day2?.noon ?? "—"} kWh`}
+                    sx={{ mr: 1 }}
+                  />
+                  <Chip
+                    label={`🌙 ${input.forecast?.day2?.night ?? "—"} kWh`}
+                  />
                 </TableCell>
+
                 <TableCell align="center">
                   <Button
                     variant="outlined"
@@ -208,7 +246,12 @@ function SolarDetails() {
         </Table>
       </TableContainer>
 
-      <Dialog open={!!editData} onClose={() => setEditData(null)} maxWidth="sm" fullWidth>
+      <Dialog
+        open={!!editData}
+        onClose={() => setEditData(null)}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle>Edit Solar Input</DialogTitle>
         <DialogContent dividers>
           <TextField
@@ -216,23 +259,29 @@ function SolarDetails() {
             type="number"
             fullWidth
             margin="dense"
-            value={editData?.numPanels || ""}
-            onChange={(e) => setEditData({ ...editData, numPanels: e.target.value })}
+            value={editData?.numPanels ?? ""}
+            onChange={(e) =>
+              setEditData({ ...editData, numPanels: e.target.value })
+            }
           />
           <TextField
             label="Panel Capacity (kW)"
             type="number"
             fullWidth
             margin="dense"
-            value={editData?.panelCapacity || ""}
-            onChange={(e) => setEditData({ ...editData, panelCapacity: e.target.value })}
+            value={editData?.panelCapacity ?? ""}
+            onChange={(e) =>
+              setEditData({ ...editData, panelCapacity: e.target.value })
+            }
           />
           <TextField
             label="Location"
             fullWidth
             margin="dense"
-            value={editData?.location || ""}
-            onChange={(e) => setEditData({ ...editData, location: e.target.value })}
+            value={editData?.location ?? ""}
+            onChange={(e) =>
+              setEditData({ ...editData, location: e.target.value })
+            }
           />
         </DialogContent>
         <DialogActions>

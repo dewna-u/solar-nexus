@@ -94,30 +94,14 @@ exports.addSolarInput = async (req, res) => {
   }
 };
 
+// controllers/solarInputController.js
+
 exports.getAllSolarInputs = async (req, res) => {
   try {
+    // Fetch all inputs, oldest first
     const inputs = await SolarInput.find().sort({ createdAt: 1 });
-    if (!inputs.length) {
-      return res.status(200).json({ input: null, dates: null });
-    }
-
-    const latest = inputs[inputs.length - 1];
-
-    // Compute dates again on server
-    const now = new Date();
-    const toISO = (d) => d.toISOString().split("T")[0];
-    const today = toISO(now);
-    const tomorrow = new Date(now);
-    tomorrow.setDate(now.getDate() + 1);
-    const day1 = toISO(tomorrow);
-    const dayAfter = new Date(now);
-    dayAfter.setDate(now.getDate() + 2);
-    const day2 = toISO(dayAfter);
-
-    return res.status(200).json({
-      input: latest,
-      dates: { today, day1, day2 },
-    });
+    // Return the full array
+    return res.status(200).json(inputs);
   } catch (error) {
     console.error("🔥 Error retrieving solar inputs:", error);
     return res.status(500).json({
@@ -126,6 +110,7 @@ exports.getAllSolarInputs = async (req, res) => {
     });
   }
 };
+
 
 exports.deleteSolarInput = async (req, res) => {
   try {

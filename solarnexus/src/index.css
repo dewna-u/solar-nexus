@@ -1,38 +1,26 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  width: 100vw;
-  height: auto;
-  overflow: hidden;
-}
-
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
-}
-
 /* index.css */
 
 /* 1) Make box-sizing inherit everywhere */
 html {
   box-sizing: border-box;
-  font-size: 16px;             /* base font-size */
+  font-size: 16px; /* base font-size */
 }
 *, *::before, *::after {
   box-sizing: inherit;
 }
 
-/* 2) Ensure full-width on mobile */
-body {
+/* 2) Reset margins and allow vertical scrolling */
+html, body, #root {
   margin: 0;
   padding: 0;
   width: 100%;
   min-height: 100vh;
-  font-family: "Segoe UI", sans-serif;
+  /* hide horizontal overflow, but allow vertical scroll */
+  overflow-x: hidden;
+  overflow-y: auto;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 
+               'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 
+               'Droid Sans', 'Helvetica Neue', sans-serif;
 }
 
 /* 3) Utility responsive typography */
