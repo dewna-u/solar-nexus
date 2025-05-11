@@ -7,10 +7,9 @@ import MonitoringDashboard from "./Components/IT22101488/MonitoringDashboard";
 import PaymentPage from "./Components/IT22259448/PaymentPage";
 import MembershipPage from "./Components/IT22259448/MembershipPage";
 import Navbar from "./NavBar/navbar";
-import SolarDetails from "./Components/IT22101488/SolarDetails"; // Import new page
+import SolarDetails from "./Components/IT22101488/SolarDetails"; 
 import MembershipDetails from "./Components/IT22259448/MembershipDetails";
-// import CancelMembership from "./Components/IT22259448/CancelMembership";
-// import ChangeMembership from "./Components/IT22259448/ChangeMembership";
+import AdminPayments from "./Components/IT22259448/AdminPayments"; // Import the new component
 import Login from "./pages/Login/Login";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword  from "./pages/Forgot password/ResetPassword";
@@ -22,8 +21,6 @@ import Contact from "./Components/IT22169044/Contact";
 import FeedbackAdmin from "./Components/IT22169044/feedbackAdmin";
 import UserList from "./pages/User/UserList";
 
-
-
 function App() {
   return (
     <div className="App">
@@ -33,24 +30,22 @@ function App() {
           <Route path="/HomePage" element={<HomePage />} />
           <Route path="/SolarInputs" element={<SolarInputs />} />
           <Route path="/MonitoringDashboard" element={<MonitoringDashboard />} />
-          <Route path="/SolarDetails" element={<SolarDetails />} /> {/* New Route */}
+          <Route path="/SolarDetails" element={<SolarDetails />} />
           <Route path="/PaymentPage" element={<PaymentPage />} />
           <Route path="/MembershipPage" element={<MembershipPage />} />
           <Route path="/MembershipDetails" element={<MembershipDetails />} />
-          {/* <Route path="/CancelMembership" element={<CancelMembership/>} />
-          <Route path="/ChangeMnpmembership" element={<ChangeMembership/>} /> */}
+          <Route path="/adminpayments" element={<AdminPayments />} /> {/* Add this new route */}
           <Route path="*" element={<NotFound />} />
           <Route path="/login" element={<Login />}/>
           <Route path="/forgotpassword" element={<ForgotPassword />}/>
           <Route path="/reset_password/:token" element={<ResetPassword />} />
           <Route path="/register" element={<Register/>}/>
           <Route path="/admindashboard" element={<AdminDashboard/>}/>
-          <Route path="/userprofile" element={<AdminProfile />} /> {/* Ensure this exists */}
+          <Route path="/userprofile" element={<AdminProfile />} />
           <Route path="/Feedback" element={<Feedback />} />
           <Route path="/Contact" element={<Contact />} />
-          <Route path="/FeedbackAdmin" element={<FeedbackAdmin />} />
-          <Route path="/userlist" element={<UserList />} /> {/* Ensure this exists */}
-
+          <Route path="/FeedbackAdmin" element={<FeedbackAdmin />} />
+          <Route path="/userlist" element={<UserList />} />
        </Routes>
       </Router>
     </div>

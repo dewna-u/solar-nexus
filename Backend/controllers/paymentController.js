@@ -1,4 +1,6 @@
 const Payment = require("../models/Payment");
+const User = require("../models/User");
+const jwt = require("jsonwebtoken");
 
 // CREATE Payment
 exports.processPayment = async (req, res) => {
@@ -40,6 +42,35 @@ exports.processPayment = async (req, res) => {
     });
 
     await payment.save();
+
+    // Update the user's membership type
+    const authHeader = req.headers.authorization;
+    if (authHeader) {
+      // Make sure to handle both "Bearer TOKEN" and just "TOKEN" formats
+      const token = authHeader.startsWith('Bearer ') 
+        ? authHeader.substring(7) 
+        : authHeader;
+        
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const userId = decoded.userId;
+        
+        // Log the update attempt for debugging
+        console.log(`Updating user ${userId} to membership ${membershipType}`);
+        
+        // Update user's membership type
+        const updatedUser = await User.findByIdAndUpdate(
+          userId, 
+          { membershipType },
+          { new: true }
+        );
+        
+        console.log("Updated user:", updatedUser ? "success" : "not found");
+      } catch (err) {
+        console.error("Error updating user membership:", err.message);
+      }
+    }
+
     res.status(200).json({ message: "Payment processed successfully", payment });
   } catch (error) {
     console.error("Payment Error:", error);

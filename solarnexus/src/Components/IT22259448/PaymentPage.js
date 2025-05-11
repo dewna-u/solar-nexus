@@ -71,9 +71,15 @@ function PaymentPage() {
     e.preventDefault();
     if (validateForm()) {
       try {
+        // Get auth token from localStorage
+        const token = localStorage.getItem('token');
+        
         const response = await fetch("http://localhost:5000/api/payment", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}` // Add authentication token
+          },
           body: JSON.stringify({ ...formData, paymentMethod }),
         });
 
@@ -81,7 +87,8 @@ function PaymentPage() {
         if (response.ok) {
           setSuccessOpen(true);
           setTimeout(() => {
-            navigate("/SolarInputs");
+            // Navigate to membership page instead of solar inputs
+            navigate("/MembershipPage");
           }, 2500);
         } else {
           alert("Payment failed: " + data.message);

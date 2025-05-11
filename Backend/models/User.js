@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema({
   mobilenumber: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  // 🔹 Fields for password reset
+  membershipType: { type: String, default: "Free" },
   resetPasswordToken: { type: String },
   resetPasswordExpires: { type: Date },
 }, { timestamps: true });
