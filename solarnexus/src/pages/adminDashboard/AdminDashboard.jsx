@@ -46,18 +46,28 @@ const UserDashboard = () => {
         <Toolbar />
         <List>
           <ListItem disablePadding>
-            <ListItemButton onClick={() => navigate("/userprofile")}>
-              <ListItemText primary="My Profile" />
+            <ListItemButton onClick={() => navigate("/userlist")}>
+              <ListItemText primary="User Profile" />
             </ListItemButton>
           </ListItem>
           <ListItem disablePadding>
-            <ListItemButton onClick={() => navigate("/solarMonitoring")}>
+            <ListItemButton onClick={() => navigate("/SolarDetails")}>
               <ListItemText primary="Solar Monitoring" />
             </ListItemButton>
           </ListItem>
           <ListItem disablePadding>
-            <ListItemButton onClick={() => navigate("/support")}>
-              <ListItemText primary="Support" />
+            <ListItemButton onClick={() => navigate("/admincontactdashboard")}>
+              <ListItemText primary="Contact Us" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton onClick={() => navigate("/adminpayments")}>
+              <ListItemText primary="Payment" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton onClick={() => navigate("/userprofile")}>
+              <ListItemText primary="Feedback" />
             </ListItemButton>
           </ListItem>
         </List>

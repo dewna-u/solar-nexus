@@ -55,6 +55,7 @@ function MembershipPage() {
         body: JSON.stringify(selectedPlanData),
       });
 
+
       if (response.ok) {
         console.log("Membership plan submitted successfully!");
       } else {
@@ -143,3 +144,4 @@ function MembershipPage() {
 }
 
 export default MembershipPage;
+

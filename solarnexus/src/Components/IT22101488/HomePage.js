@@ -44,7 +44,7 @@ function HomePage() {
             Membership Page
           </button>
            <button className="home-btn" onClick={onGoToFeedback}>
-            feedback Page
+            feedback Pagez
           </button>
            <button className="home-btn" onClick={onGoToContact}>
             Contact Page
