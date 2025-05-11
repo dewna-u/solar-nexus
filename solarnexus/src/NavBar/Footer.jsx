@@ -21,11 +21,15 @@ const Footer = () => {
     <Box
       component="footer"
       sx={{
-        bgcolor: "#1c1c1c",
+        bgcolor: "rgba(50, 50, 50, 0.8)", // Semi-transparent dark background
         color: "#fff",
         px: { xs: 4, sm: 8 },
         py: { xs: 6, sm: 8 },
         mt: "auto",
+        borderRadius: "12px", // Rounded edges
+        boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)", // Shadow outline
+        backdropFilter: "blur(10px)", // Blur effect
+        mx: { xs: 2, sm: 4 }, // Margin on the sides
       }}
     >
       <Grid container spacing={4}>
@@ -34,7 +38,7 @@ const Footer = () => {
           <Typography variant="h6" gutterBottom>
             Solar Nexus
           </Typography>
-          <Typography variant="body2">
+          <Typography variant="body2" sx={{ opacity: 0.8 }}>
             A smart solar monitoring solution to track, optimize, and improve your energy usage for a greener tomorrow.
           </Typography>
         </Grid>
@@ -45,10 +49,24 @@ const Footer = () => {
             Quick Links
           </Typography>
           <Stack spacing={1}>
-            <Link href="/" color="inherit" underline="hover">Home</Link>
-            <Link href="/MonitoringDashboard" color="inherit" underline="hover">Monitoring</Link>
-            <Link href="/Contact" color="inherit" underline="hover">Contact</Link>
-            <Link href="/About" color="inherit" underline="hover">About Us</Link>
+            <Link href="/HomePage" color="inherit" underline="hover">
+              Home
+            </Link>
+            <Link href="/MonitoringDashboard" color="inherit" underline="hover">
+              Monitoring
+            </Link>
+            <Link href="/Contact" color="inherit" underline="hover">
+              Contact
+            </Link>
+            <Link href="/About" color="inherit" underline="hover">
+              About Us
+            </Link>
+            <Link href="/PrivacyPolicy" color="inherit" underline="hover">
+              Privacy Policy
+            </Link>
+            <Link href="/Terms" color="inherit" underline="hover">
+              Terms of Service
+            </Link>
           </Stack>
         </Grid>
 
@@ -97,6 +115,9 @@ const Footer = () => {
       <Divider sx={{ bgcolor: "#444", my: 4 }} />
       <Typography variant="body2" align="center" sx={{ opacity: 0.7 }}>
         © {new Date().getFullYear()} Solar Nexus. All rights reserved.
+      </Typography>
+      <Typography variant="body2" align="center" sx={{ opacity: 0.7, mt: 1 }}>
+        Designed and developed with ❤️ by Solar Nexus Team.
       </Typography>
     </Box>
   );

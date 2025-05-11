@@ -1,4 +1,3 @@
-// NavBar.jsx
 import React, { useState } from "react";
 import {
   AppBar,
@@ -39,10 +38,10 @@ export default function NavBar() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [darkMode, setDarkMode]     = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
 
   const toggleDrawer = () => setMobileOpen(!mobileOpen);
-  const toggleTheme  = () => {
+  const toggleTheme = () => {
     setDarkMode(!darkMode);
     document.body.style.backgroundColor = darkMode ? "" : "#121212";
   };
@@ -91,7 +90,13 @@ export default function NavBar() {
           />
         </ListItemButton>
 
-        <ListItemButton onClick={() => { toggleDrawer(); handleLogout(); }} sx={{ borderRadius: 1 }}>
+        <ListItemButton
+          onClick={() => {
+            toggleDrawer();
+            handleLogout();
+          }}
+          sx={{ borderRadius: 1 }}
+        >
           <ListItemIcon sx={{ color: darkMode ? "#fff" : "#000" }}>
             <ExitToAppIcon />
           </ListItemIcon>
@@ -109,12 +114,19 @@ export default function NavBar() {
       <CssBaseline />
 
       <AppBar
-        position="sticky"
+        position="fixed"
         elevation={0}
         sx={{
-          backdropFilter: "blur(6px)",
-          backgroundColor: darkMode ? "#000000" : "#cccccc",
+          top: 10, // Adds margin from the top
+          left: "10px", // Adds margin from the left
+          right: "10px", // Adds margin from the right
+          borderRadius: "12px", // Makes the navbar rounded
+          backdropFilter: "blur(10px)", // Adds a blur effect
+          backgroundColor: darkMode
+            ? "rgba(50, 50, 50, 0.8)" // Slight ash color for dark mode
+            : "rgba(200, 200, 200, 0.8)", // Slight ash color for light mode
           color: darkMode ? "#fff" : "#000",
+          boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)", // Adds shadow outline
         }}
       >
         <Toolbar>
@@ -203,6 +215,9 @@ export default function NavBar() {
       >
         {drawer}
       </Drawer>
+
+      {/* Add padding to the main content */}
+      <Box sx={{ mt: 12 }} />
     </>
   );
 }
