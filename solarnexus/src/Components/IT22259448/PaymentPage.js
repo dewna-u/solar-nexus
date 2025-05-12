@@ -57,8 +57,8 @@ function PaymentPage() {
       newErrors.amount = "Valid amount is required";
 
     if (paymentMethod === "credit") {
-      if (!/^[0-9]{12}$/.test(formData.cardNumber))
-        newErrors.cardNumber = "Card number must be 12 digits";
+      if (!/^[0-9]{16}$/.test(formData.cardNumber))
+        newErrors.cardNumber = "Card number must be 16 digits";
       if (!formData.expiry) newErrors.expiry = "Expiry date is required";
       if (!/^[0-9]{3}$/.test(formData.cvv)) newErrors.cvv = "CVV must be 3 digits";
     }
