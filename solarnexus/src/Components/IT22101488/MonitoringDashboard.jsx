@@ -12,10 +12,112 @@ import {
 } from "chart.js";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import {
+  Box,
+  Container,
+  Typography,
+  Grid,
+  Paper,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  Divider,
+  CircularProgress,
+  Alert,
+  IconButton,
+  Chip,
+  useTheme,
+  createTheme,
+  ThemeProvider,
+} from "@mui/material";
+import {
+  ArrowBack,
+  PictureAsPdf,
+  WbSunny,
+  Brightness4,
+  NightsStay,
+  Speed,
+  BatteryChargingFull,
+  LocationOn,
+  BarChart,
+  GridView,
+} from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
+// Custom theme for solar dashboard
+const solarTheme = createTheme({
+  palette: {
+    primary: {
+      main: "#f57c00", // Orange for solar theme
+      light: "#ffad42",
+      dark: "#bb4d00",
+      contrastText: "#fff",
+    },
+    secondary: {
+      main: "#2196f3", // Blue for contrast
+      light: "#6ec6ff",
+      dark: "#0069c0",
+      contrastText: "#fff",
+    },
+    background: {
+      default: "#f5f5f5",
+      paper: "#ffffff",
+    },
+  },
+  typography: {
+    fontFamily: "'Roboto', 'Segoe UI', sans-serif",
+    h4: {
+      fontWeight: 600,
+    },
+    h5: {
+      fontWeight: 600,
+    },
+    h6: {
+      fontWeight: 500,
+    },
+  },
+  components: {
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          borderRadius: 16,
+          boxShadow: "0 8px 40px rgba(0,0,0,0.12)",
+        },
+      },
+    },
+    MuiCardHeader: {
+      styleOverrides: {
+        root: {
+          paddingBottom: 0,
+        },
+      },
+    },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 8,
+          textTransform: "none",
+          fontWeight: 500,
+        },
+      },
+    },
+    MuiChip: {
+      styleOverrides: {
+        root: {
+          fontWeight: 500,
+        },
+      },
+    },
+  },
+});
+
 function MonitoringDashboard({ onBack }) {
+  const theme = useTheme();
+  const navigate = useNavigate(); // Ensure navigate is initialized
   const [solarData, setSolarData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -102,7 +204,9 @@ function MonitoringDashboard({ onBack }) {
               solarData.forecast.day1.noon,
               solarData.forecast.day1.night,
             ],
-            backgroundColor: "rgba(255, 99, 132, 0.6)",
+            backgroundColor: theme.palette.primary.main,
+            borderColor: theme.palette.primary.dark,
+            borderWidth: 1,
           },
           {
             label: "Day After",
@@ -111,7 +215,9 @@ function MonitoringDashboard({ onBack }) {
               solarData.forecast.day2.noon,
               solarData.forecast.day2.night,
             ],
-            backgroundColor: "rgba(54, 162, 235, 0.6)",
+            backgroundColor: theme.palette.secondary.main,
+            borderColor: theme.palette.secondary.dark,
+            borderWidth: 1,
           },
         ],
       }
@@ -119,186 +225,416 @@ function MonitoringDashboard({ onBack }) {
 
   const chartOptions = {
     responsive: true,
-    plugins: { legend: { position: "bottom" } },
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: "bottom",
+        labels: {
+          boxWidth: 12,
+          padding: 15,
+          font: {
+            size: 12,
+          },
+        },
+      },
+      tooltip: {
+        backgroundColor: "rgba(0,0,0,0.8)",
+        padding: 10,
+        titleFont: {
+          size: 14,
+        },
+        bodyFont: {
+          size: 13,
+        },
+        displayColors: true,
+        usePointStyle: true,
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: "Energy (kWh)",
+          font: {
+            size: 12,
+            weight: "bold",
+          },
+        },
+        ticks: {
+          font: {
+            size: 11,
+          },
+        },
+      },
+      x: {
+        ticks: {
+          font: {
+            size: 11,
+          },
+        },
+      },
+    },
   };
 
   if (loading) {
-    return <p style={{ textAlign: "center", marginTop: 40 }}>Loading data…</p>;
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <CircularProgress color="primary" />
+        <Typography variant="h6" sx={{ ml: 2 }}>
+          Loading solar data...
+        </Typography>
+      </Box>
+    );
   }
 
   if (!solarData) {
     return (
-      <p style={{ textAlign: "center", marginTop: 40 }}>
-        No solar panel data found.
-      </p>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          flexDirection: "column",
+          p: 3,
+        }}
+      >
+        <Alert severity="warning" sx={{ mb: 2 }}>
+          No solar panel data found
+        </Alert>
+        <Button
+          variant="outlined"
+          startIcon={<ArrowBack />}
+          onClick={onBack}
+        >
+          Go Back
+        </Button>
+      </Box>
     );
   }
 
   return (
-    <div style={styles.page}>
-      <h2 style={styles.title}>☀️ Solar Monitoring Dashboard</h2>
+    <ThemeProvider theme={solarTheme}>
+      <Box
+        sx={{
+          bgcolor: "background.default",
+          minHeight: "100vh",
+          py: 4,
+        }}
+      >
+        <Container maxWidth="lg">
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              mb: 4,
+            }}
+          >
+            <Typography
+              variant="h4"
+              component="h1"
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                color: "primary.main",
+              }}
+            >
+              <WbSunny sx={{ mr: 1 }} /> Solar Monitoring Dashboard
+            </Typography>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<PictureAsPdf />}
+              onClick={exportToPDF}
+            >
+              Export to PDF
+            </Button>
+          </Box>
 
-      <div style={{ textAlign: "right", marginBottom: 20 }}>
-        <button onClick={exportToPDF} style={styles.pdfButton}>
-          📄 Export to PDF
-        </button>
-      </div>
+          <Grid container spacing={3}>
+            {/* User Inputs */}
+            <Grid item xs={12} md={4}>
+              <Card elevation={2}>
+                <CardHeader
+                  title="System Configuration"
+                  titleTypographyProps={{ variant: "h6" }}
+                  avatar={<GridView color="primary" />}
+                />
+                <CardContent>
+                  <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                    <Chip
+                      label={`${solarData.numPanels} Panels`}
+                      color="primary"
+                      variant="outlined"
+                      sx={{ mr: 1 }}
+                    />
+                    <Chip
+                      label={`${solarData.panelCapacity} kW`}
+                      color="primary"
+                      variant="outlined"
+                    />
+                  </Box>
+                  <Box sx={{ display: "flex", alignItems: "center", mt: 2 }}>
+                    <LocationOn color="action" sx={{ mr: 1 }} />
+                    <Typography variant="body1">
+                      {solarData.location}
+                    </Typography>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
 
-      <div style={styles.grid}>
-        {/* User Inputs */}
-        <div style={styles.card}>
-          <h3 style={styles.cardTitle}>User Input Details</h3>
-          <p style={styles.text}>
-            <strong>Panels:</strong> {solarData.numPanels}
-            <br />
-            <strong>Capacity:</strong> {solarData.panelCapacity} kW
-            <br />
-            <strong>District:</strong> {solarData.location}
-          </p>
-        </div>
+            {/* Real-time Output */}
+            <Grid item xs={12} md={4}>
+              <Card elevation={2}>
+                <CardHeader
+                  title="Current Power Output"
+                  titleTypographyProps={{ variant: "h6" }}
+                  avatar={<Speed color="primary" />}
+                />
+                <CardContent>
+                  <Typography
+                    variant="h3"
+                    component="div"
+                    sx={{
+                      fontWeight: "bold",
+                      color: "primary.main",
+                      textAlign: "center",
+                      my: 2,
+                    }}
+                  >
+                    {solarData.totalCapacity} W
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
 
-        {/* Real-time Output */}
-        <div style={styles.card}>
-          <h3 style={styles.cardTitle}>Power Output</h3>
-          <p style={styles.largeNumber}>
-            {solarData.totalCapacity} W
-          </p>
-        </div>
+            {/* Today's Estimate */}
+            <Grid item xs={12} md={4}>
+              <Card elevation={2}>
+                <CardHeader
+                  title="Today's Estimated Energy"
+                  titleTypographyProps={{ variant: "h6" }}
+                  avatar={<BatteryChargingFull color="primary" />}
+                />
+                <CardContent>
+                  <Typography
+                    variant="h3"
+                    component="div"
+                    sx={{
+                      fontWeight: "bold",
+                      color: "primary.main",
+                      textAlign: "center",
+                      my: 2,
+                    }}
+                  >
+                    {(solarData.totalCapacity * 5).toFixed(1)} kWh
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
 
-        {/* Today’s Estimate */}
-        <div style={styles.card}>
-          <h3 style={styles.cardTitle}>Today's Estimated Energy</h3>
-          <p style={styles.largeNumber}>
-            {(solarData.totalCapacity * 5).toFixed(1)} kWh
-          </p>
-        </div>
+            {/* Day 1 Forecast */}
+            <Grid item xs={12} md={6}>
+              <Card elevation={2}>
+                <CardHeader
+                  title="Tomorrow's Forecast"
+                  titleTypographyProps={{ variant: "h6" }}
+                  avatar={<WbSunny color="primary" />}
+                />
+                <CardContent>
+                  {solarData.forecast ? (
+                    <>
+                      <Grid container spacing={2} sx={{ mb: 2 }}>
+                        {[
+                          { time: "Morning", icon: <WbSunny />, emoji: "☀️" },
+                          { time: "Noon", icon: <Brightness4 />, emoji: "🌤️" },
+                          { time: "Night", icon: <NightsStay />, emoji: "🌙" },
+                        ].map((period, i) => (
+                          <Grid
+                            item
+                            xs={4}
+                            key={i}
+                            sx={{ textAlign: "center" }}
+                          >
+                            <Paper
+                              elevation={0}
+                              sx={{
+                                p: 2,
+                                bgcolor: "background.default",
+                                borderRadius: 2,
+                              }}
+                            >
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                                sx={{ mb: 1 }}
+                              >
+                                {period.emoji} {period.time}
+                              </Typography>
+                              <Typography
+                                variant="h6"
+                                color="primary.main"
+                                sx={{ fontWeight: "bold" }}
+                              >
+                                {solarData.forecast.day1[
+                                  period.time.toLowerCase()
+                                ].toFixed(1)}{" "}
+                                kWh
+                              </Typography>
+                            </Paper>
+                          </Grid>
+                        ))}
+                      </Grid>
+                      <Divider sx={{ my: 2 }} />
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Typography variant="subtitle1" sx={{ mr: 1 }}>
+                          Total Energy:
+                        </Typography>
+                        <Chip
+                          label={`${totalEnergy(
+                            solarData.forecast.day1
+                          )} kWh`}
+                          color="primary"
+                          sx={{ fontWeight: "bold" }}
+                        />
+                      </Box>
+                    </>
+                  ) : (
+                    <Alert severity="info">No forecast data available</Alert>
+                  )}
+                </CardContent>
+              </Card>
+            </Grid>
 
-        {/* Day 1 Forecast */}
-        <div style={styles.card}>
-          <h3 style={styles.cardTitle}>Tomorrow's Forecast</h3>
-          {solarData.forecast ? (
-            <>
-              <div style={styles.weatherFlex}>
-                {["morning", "noon", "night"].map((period, i) => (
-                  <div key={i}>
-                    {["☀️","🌤️","🌙"][i]}
-                    <br />
-                    <small>{period.charAt(0).toUpperCase() + period.slice(1)}</small>
-                    <br />
-                    <strong>
-                      {solarData.forecast.day1[period].toFixed(1)} kWh
-                    </strong>
-                  </div>
-                ))}
-              </div>
-              <p style={styles.total}>
-                Total: {totalEnergy(solarData.forecast.day1)} kWh
-              </p>
-            </>
-          ) : (
-            <p>No forecast data</p>
-          )}
-        </div>
+            {/* Day 2 Forecast */}
+            <Grid item xs={12} md={6}>
+              <Card elevation={2}>
+                <CardHeader
+                  title="Day After Forecast"
+                  titleTypographyProps={{ variant: "h6" }}
+                  avatar={<WbSunny color="primary" />}
+                />
+                <CardContent>
+                  {solarData.forecast ? (
+                    <>
+                      <Grid container spacing={2} sx={{ mb: 2 }}>
+                        {[
+                          { time: "Morning", icon: <WbSunny />, emoji: "☀️" },
+                          { time: "Noon", icon: <Brightness4 />, emoji: "🌤️" },
+                          { time: "Night", icon: <NightsStay />, emoji: "🌙" },
+                        ].map((period, i) => (
+                          <Grid
+                            item
+                            xs={4}
+                            key={i}
+                            sx={{ textAlign: "center" }}
+                          >
+                            <Paper
+                              elevation={0}
+                              sx={{
+                                p: 2,
+                                bgcolor: "background.default",
+                                borderRadius: 2,
+                              }}
+                            >
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                                sx={{ mb: 1 }}
+                              >
+                                {period.emoji} {period.time}
+                              </Typography>
+                              <Typography
+                                variant="h6"
+                                color="primary.main"
+                                sx={{ fontWeight: "bold" }}
+                              >
+                                {solarData.forecast.day2[
+                                  period.time.toLowerCase()
+                                ].toFixed(1)}{" "}
+                                kWh
+                              </Typography>
+                            </Paper>
+                          </Grid>
+                        ))}
+                      </Grid>
+                      <Divider sx={{ my: 2 }} />
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Typography variant="subtitle1" sx={{ mr: 1 }}>
+                          Total Energy:
+                        </Typography>
+                        <Chip
+                          label={`${totalEnergy(
+                            solarData.forecast.day2
+                          )} kWh`}
+                          color="primary"
+                          sx={{ fontWeight: "bold" }}
+                        />
+                      </Box>
+                    </>
+                  ) : (
+                    <Alert severity="info">No forecast data available</Alert>
+                  )}
+                </CardContent>
+              </Card>
+            </Grid>
 
-        {/* Day 2 Forecast */}
-        <div style={styles.card}>
-          <h3 style={styles.cardTitle}>Day After Forecast</h3>
-          {solarData.forecast ? (
-            <>
-              <div style={styles.weatherFlex}>
-                {["morning", "noon", "night"].map((period, i) => (
-                  <div key={i}>
-                    {["☀️","🌤️","🌙"][i]}
-                    <br />
-                    <small>{period.charAt(0).toUpperCase() + period.slice(1)}</small>
-                    <br />
-                    <strong>
-                      {solarData.forecast.day2[period].toFixed(1)} kWh
-                    </strong>
-                  </div>
-                ))}
-              </div>
-              <p style={styles.total}>
-                Total: {totalEnergy(solarData.forecast.day2)} kWh
-              </p>
-            </>
-          ) : (
-            <p>No forecast data</p>
-          )}
-        </div>
+            {/* Chart */}
+            {chartData && (
+              <Grid item xs={12}>
+                <Card elevation={2}>
+                  <CardHeader
+                    title="Energy Forecast Comparison"
+                    titleTypographyProps={{ variant: "h6" }}
+                    avatar={<BarChart color="primary" />}
+                  />
+                  <CardContent>
+                    <Box sx={{ height: 350, p: 1 }}>
+                      <Bar data={chartData} options={chartOptions} />
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+            )}
+          </Grid>
 
-        {/* Chart */}
-        {chartData && (
-          <div style={styles.card}>
-            <h3 style={styles.cardTitle}>Energy Forecast Comparison</h3>
-            <Bar data={chartData} options={chartOptions} />
-          </div>
-        )}
-      </div>
-
-      <button style={styles.button} onClick={onBack}>
-        ⬅ Back
-      </button>
-    </div>
+          <Box sx={{ mt: 4, textAlign: "center" }}>
+            <Button
+              variant="outlined"
+              color="primary"
+              startIcon={<ArrowBack />}
+              onClick={() => navigate("/HomePage")} // Navigate to /HomePage
+              size="large"
+            >
+              Back to Main Page
+            </Button>
+          </Box>
+        </Container>
+      </Box>
+    </ThemeProvider>
   );
 }
-
-const styles = {
-  page: {
-    background: "linear-gradient(to bottom, #fceabb, #f8b500)",
-    fontFamily: "'Segoe UI', sans-serif",
-    minHeight: "100vh",
-    padding: "40px 20px",
-    color: "#333",
-    textAlign: "center",
-  },
-  title: { fontSize: "32px", fontWeight: 600, marginBottom: "30px" },
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-    gap: "24px",
-    maxWidth: "1100px",
-    margin: "0 auto",
-  },
-  card: {
-    background: "rgba(255,255,255,0.35)",
-    borderRadius: "16px",
-    padding: "20px",
-    backdropFilter: "blur(8px)",
-    boxShadow: "0 6px 30px rgba(0,0,0,0.1)",
-    color: "#000",
-  },
-  cardTitle: { fontSize: "20px", marginBottom: "12px" },
-  largeNumber: { fontSize: "30px", fontWeight: "bold" },
-  weatherFlex: {
-    display: "flex",
-    justifyContent: "space-around",
-    gap: "12px",
-    fontSize: "14px",
-  },
-  total: { marginTop: "10px", fontWeight: "bold", color: "#444" },
-  pdfButton: {
-    padding: "8px 16px",
-    fontSize: "14px",
-    backgroundColor: "#007bff",
-    color: "#fff",
-    borderRadius: "6px",
-    border: "none",
-    cursor: "pointer",
-  },
-  button: {
-    marginTop: "30px",
-    padding: "10px 24px",
-    fontSize: "16px",
-    border: "none",
-    borderRadius: "8px",
-    backgroundColor: "#ffffffcc",
-    color: "#333",
-    cursor: "pointer",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-    backdropFilter: "blur(6px)",
-  },
-  text: { fontSize: "16px", lineHeight: "1.6" },
-};
 
 export default MonitoringDashboard;

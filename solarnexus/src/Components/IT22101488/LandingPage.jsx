@@ -9,6 +9,7 @@ import {
   Box,
   Grid,
   Card,
+  CardActionArea,
   CardContent,
   Avatar,
   useTheme,
@@ -22,10 +23,17 @@ export default function LandingPage() {
   return (
     <Box>
       {/* NAVBAR */}
-      <AppBar position="static" color="transparent" elevation={0}>
+      <AppBar
+        position="sticky"
+        sx={{
+          background: "rgba(255, 255, 255, 0.8)",
+          backdropFilter: "blur(10px)",
+          boxShadow: "none",
+        }}
+      >
         <Toolbar sx={{ justifyContent: "space-between" }}>
           <Typography
-            variant="h5"
+            variant="h6"
             component={RouterLink}
             to="/"
             sx={{
@@ -37,11 +45,7 @@ export default function LandingPage() {
             SolarNexus
           </Typography>
           <Box>
-            <Button
-              component={RouterLink}
-              to="/login"
-              sx={{ marginRight: 2 }}
-            >
+            <Button component={RouterLink} to="/login" sx={{ mr: 2 }}>
               Login
             </Button>
             <Button
@@ -58,20 +62,36 @@ export default function LandingPage() {
       {/* HERO */}
       <Box
         sx={{
-          minHeight: "60vh",
+          minHeight: "70vh",
           display: "flex",
           alignItems: "center",
           textAlign: "center",
-          background: `linear-gradient(135deg, ${theme.palette.primary.light} 0%, ${theme.palette.secondary.light} 100%)`,
+          backgroundImage:
+            "linear-gradient(to bottom right, rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url('/images/solar-background.jpg')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
           color: "#fff",
-          py: 8,
+          py: 10,
         }}
       >
         <Container maxWidth="md">
-          <Typography variant="h2" gutterBottom>
-            Monitor Your Solar Power—Effortlessly
+          <Typography
+            variant="h3"
+            gutterBottom
+            sx={{ fontWeight: 700, textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}
+          >
+            Monitor Your Solar Power
+            <br />
+            Effortlessly
           </Typography>
-          <Typography variant="h6" sx={{ mb: 4 }}>
+          <Typography
+            variant="h6"
+            sx={{
+              mb: 4,
+              textShadow: "0 1px 6px rgba(0,0,0,0.4)",
+              lineHeight: 1.5,
+            }}
+          >
             Track real-time output, forecast future energy, and optimize
             performance—all in one dashboard.
           </Typography>
@@ -80,6 +100,12 @@ export default function LandingPage() {
             size="large"
             component={RouterLink}
             to="/register"
+            sx={{
+              py: 1.5,
+              px: 4,
+              fontSize: "1rem",
+              boxShadow: theme.shadows[4],
+            }}
           >
             Get Started
           </Button>
@@ -87,22 +113,22 @@ export default function LandingPage() {
       </Box>
 
       {/* FEATURES */}
-      <Box sx={{ py: 6 }}>
+      <Box sx={{ py: 8, background: theme.palette.grey[50] }}>
         <Container maxWidth="lg">
-          <Grid container spacing={4}>
+          <Grid container spacing={6}>
             {[
               {
-                icon: <SolarPower color="primary" sx={{ fontSize: 40 }} />,
+                icon: <SolarPower fontSize="large" />,
                 title: "Real-Time Monitoring",
                 text: "See exactly how much power your panels are producing right now.",
               },
               {
-                icon: <InsertChart color="primary" sx={{ fontSize: 40 }} />,
+                icon: <InsertChart fontSize="large" />,
                 title: "Accurate Forecasts",
                 text: "Plan ahead with AI-driven energy generation predictions.",
               },
               {
-                icon: <Speed color="primary" sx={{ fontSize: 40 }} />,
+                icon: <Speed fontSize="large" />,
                 title: "Performance Insights",
                 text: "Identify underperforming panels and boost efficiency.",
               },
@@ -110,31 +136,39 @@ export default function LandingPage() {
               <Grid item xs={12} md={4} key={i}>
                 <Card
                   elevation={3}
-                  sx={{ 
-                    textAlign: "center", 
-                    py: 4, 
-                    px: 2, 
-                    height: "100%" 
+                  sx={{
+                    borderRadius: 4,
+                    "&:hover": { transform: "translateY(-4px)" },
+                    transition: "transform 0.3s ease",
                   }}
                 >
-                  <Avatar
-                    sx={{
-                      bgcolor: theme.palette.primary.main,
-                      width: 64,
-                      height: 64,
-                      margin: "0 auto 16px",
-                    }}
-                  >
-                    {feature.icon}
-                  </Avatar>
-                  <CardContent>
-                    <Typography variant="h6" gutterBottom>
-                      {feature.title}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {feature.text}
-                    </Typography>
-                  </CardContent>
+                  <CardActionArea>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        pt: 4,
+                      }}
+                    >
+                      <Avatar
+                        sx={{
+                          bgcolor: theme.palette.primary.light,
+                          width: 64,
+                          height: 64,
+                        }}
+                      >
+                        {feature.icon}
+                      </Avatar>
+                    </Box>
+                    <CardContent sx={{ textAlign: "center" }}>
+                      <Typography variant="h6" gutterBottom>
+                        {feature.title}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {feature.text}
+                      </Typography>
+                    </CardContent>
+                  </CardActionArea>
                 </Card>
               </Grid>
             ))}
@@ -146,8 +180,7 @@ export default function LandingPage() {
       <Box
         component="footer"
         sx={{
-          py: 3,
-          mt: 6,
+          py: 4,
           textAlign: "center",
           background: theme.palette.grey[100],
         }}

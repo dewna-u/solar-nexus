@@ -150,9 +150,17 @@ export default function NavBar() {
               textTransform: "none",
               fontSize: "1.25rem",
               fontWeight: "bold",
+              display: "flex",
+              alignItems: "center", // Align logo and text vertically
+              gap: 1, // Add spacing between logo and text
             }}
           >
-            ⚡ Solar Monitor
+            <img
+              src="/images/Ellipse 9.png" // Ensure the path is correct
+              alt="Logo"
+              style={{ height: "40px" }}
+            />
+            Solar Monitor
           </Button>
 
           {/* Desktop nav */}
