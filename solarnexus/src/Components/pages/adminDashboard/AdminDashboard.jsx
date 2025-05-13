@@ -1,12 +1,9 @@
-// src/pages/adminDashboard/AdminDashboard.jsx
-
-import React, { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   AppBar,
   Toolbar,
   Typography,
-  IconButton,
   Button,
   Drawer,
   List,
@@ -16,265 +13,442 @@ import {
   ListItemText,
   Box,
   CssBaseline,
+  Avatar,
+  IconButton,
+  Divider,
+  useTheme,
+  createTheme,
+  ThemeProvider,
+  Paper,
   Grid,
   Card,
   CardContent,
-  TextField,
-  Avatar,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
+  alpha,
+  Badge,
+  Menu,
+  MenuItem,
 } from "@mui/material";
 import {
   Dashboard as DashboardIcon,
-  SolarPower as SolarPowerIcon,
-  People as PeopleIcon,
+  Person as PersonIcon,
+  SolarPower as SolarIcon,
+  Payment as PaymentIcon,
+  Feedback as FeedbackIcon,
+  Notifications as NotificationsIcon,
   Settings as SettingsIcon,
-  TableChart as TableChartIcon,
-  WbSunny as WbSunnyIcon,
-  CloudQueue as CloudIcon,
-  Search as SearchIcon,
+  Logout as LogoutIcon,
+  Menu as MenuIcon,
+  ChevronLeft as ChevronLeftIcon,
+  BarChart as ChartIcon,
+  People as PeopleIcon,
+  AttachMoney as MoneyIcon,
+  Lightbulb as LightbulbIcon,
 } from "@mui/icons-material";
 
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Tooltip,
-  Legend,
-} from "chart.js";
-import { Line } from "react-chartjs-2";
+// Custom theme for admin dashboard
+const adminTheme = createTheme({
+  palette: {
+    primary: {
+      main: "#1976d2",
+      light: "#42a5f5",
+      dark: "#1565c0",
+    },
+    secondary: {
+      main: "#388e3c",
+      light: "#4caf50",
+      dark: "#2e7d32",
+    },
+    background: {
+      default: "#f5f7fa",
+      paper: "#ffffff",
+    },
+  },
+  typography: {
+    fontFamily: "'Poppins', 'Roboto', 'Segoe UI', sans-serif",
+    h4: {
+      fontWeight: 700,
+      letterSpacing: "-0.5px",
+    },
+    h5: {
+      fontWeight: 600,
+      letterSpacing: "-0.5px",
+    },
+    h6: {
+      fontWeight: 600,
+    },
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 8,
+          textTransform: "none",
+          fontWeight: 600,
+        },
+        contained: {
+          boxShadow: "0 4px 14px 0 rgba(0,0,0,0.1)",
+        },
+      },
+    },
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          borderRadius: 16,
+          boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
+          transition: "transform 0.3s ease, box-shadow 0.3s ease",
+          "&:hover": {
+            transform: "translateY(-5px)",
+            boxShadow: "0 12px 30px rgba(0,0,0,0.1)",
+          },
+        },
+      },
+    },
+    MuiDrawer: {
+      styleOverrides: {
+        paper: {
+          backgroundColor: "#1976d2",
+          color: "#fff",
+        },
+      },
+    },
+  },
+});
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Tooltip,
-  Legend
-);
-
-const drawerWidth = 240;
-
-export default function AdminDashboard() {
+const AdminDashboard = () => {
   const navigate = useNavigate();
+  const theme = adminTheme;
+  const [drawerOpen, setDrawerOpen] = useState(true);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
+  
+  // Mock data for dashboard stats
+  const stats = [
+    { title: "Total Users", value: "1,245", icon: <PeopleIcon />, color: theme.palette.primary.main },
+    { title: "Active Systems", value: "32", icon: <SolarIcon />, color: theme.palette.secondary.main },
+    { title: "Total Revenue", value: "$12,456", icon: <MoneyIcon />, color: "#ff9800" },
+    { title: "Energy Generated", value: "1,245 kWh", icon: <LightbulbIcon />, color: "#f44336" },
+  ];
 
-  // redirect if not authenticated
+  // Authentication check
   useEffect(() => {
-    if (!localStorage.getItem("token")) {
-      navigate("/login");
+    const isAuthenticated = localStorage.getItem("token"); 
+    if (!isAuthenticated) {
+      navigate("/login"); // Redirect to login if not authenticated
     }
   }, [navigate]);
 
-  // dummy overview data
-  const overview = {
-    totalPanels: 200,
-    totalCapacity: 400, // kW
-    weather: "Partly Cloudy",
+  const handleLogout = () => {
+    localStorage.removeItem("token"); // Clear auth token
+    navigate("/login"); // Redirect to login page
   };
 
-  // dummy energy insights data
-  const chartData = {
-    labels: ["Apr 1","Apr 2","Apr 3","Apr 4","Apr 5","Apr 6","Apr 7"],
-    datasets: [
-      {
-        label: "2023",
-        data: [30, 45, 28, 60, 50, 70, 90],
-        borderColor: "#4caf50",
-        backgroundColor: "rgba(76,175,80,0.2)",
-      },
-      {
-        label: "2024",
-        data: [50, 60, 40, 80, 65, 95, 110],
-        borderColor: "#2196f3",
-        backgroundColor: "rgba(33,150,243,0.2)",
-      },
-    ],
+  const handleDrawerToggle = () => {
+    setDrawerOpen(!drawerOpen);
   };
 
-  const chartOptions = {
-    responsive: true,
-    plugins: {
-      legend: { position: "bottom" },
-    },
+  const handleMobileDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
   };
 
-  // dummy table data
-  const tableRows = [
-    { location: "Place A", panels: 25, capacity: 50, date: "Today" },
-    { location: "Place B", panels: 75, capacity: 150, date: "Today" },
-    { location: "Place C", panels: 50, capacity: 150, date: "Wed 8" },
-    { location: "Place D", panels: 25, capacity: 35.22, date: "Tue 7" },
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const menuItems = [
+    { text: "Admin Profile", icon: <PersonIcon />, path: "/userlist" },
+    { text: "Solar Monitoring", icon: <SolarIcon />, path: "/SolarDetails" },
+    { text: "Payment", icon: <PaymentIcon />, path: "/adminpayments" },
+    { text: "Feedback", icon: <FeedbackIcon />, path: "/FeedbackList" },
   ];
 
-  // sidebar items
-  const navItems = [
-    { text: "Dashboard", icon: <DashboardIcon />, path: "/admindashboard" },
-    { text: "Solar Inputs", icon: <SolarPowerIcon />, path: "/SolarDetails" },
-    { text: "User Management", icon: <PeopleIcon />, path: "/userlist" },
-    { text: "Settings", icon: <SettingsIcon />, path: "/settings" },
-  ];
+  const drawer = (
+    <>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          p: 2,
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center" }}>
+          <DashboardIcon sx={{ mr: 1 }} />
+          <Typography variant="h6" noWrap>
+            Admin Panel
+          </Typography>
+        </Box>
+        <IconButton onClick={handleDrawerToggle} sx={{ color: "white", display: { xs: "none", sm: "block" } }}>
+          <ChevronLeftIcon />
+        </IconButton>
+      </Box>
+      <Divider sx={{ bgcolor: "rgba(255,255,255,0.1)" }} />
+      <List sx={{ mt: 2 }}>
+        {menuItems.map((item) => (
+          <ListItem key={item.text} disablePadding sx={{ mb: 1 }}>
+            <ListItemButton
+              onClick={() => navigate(item.path)}
+              sx={{
+                borderRadius: "0 24px 24px 0",
+                mr: 2,
+                "&:hover": {
+                  bgcolor: "rgba(255,255,255,0.1)",
+                },
+              }}
+            >
+              <ListItemIcon sx={{ color: "white", minWidth: 40 }}>
+                {item.icon}
+              </ListItemIcon>
+              <ListItemText primary={item.text} />
+            </ListItemButton>
+          </ListItem>
+        ))}
+      </List>
+      <Divider sx={{ bgcolor: "rgba(255,255,255,0.1)", mt: "auto" }} />
+      <List>
+        <ListItem disablePadding>
+          <ListItemButton onClick={handleLogout} sx={{ borderRadius: "0 24px 24px 0", mr: 2 }}>
+            <ListItemIcon sx={{ color: "white", minWidth: 40 }}>
+              <LogoutIcon />
+            </ListItemIcon>
+            <ListItemText primary="Logout" />
+          </ListItemButton>
+        </ListItem>
+      </List>
+    </>
+  );
 
   return (
-    <Box sx={{ display: "flex" }}>
-      <CssBaseline />
-
-      {/* Sidebar */}
-      <Drawer
-        variant="permanent"
-        sx={{
-          width: drawerWidth,
-          flexShrink: 0,
-          "& .MuiDrawer-paper": {
-            width: drawerWidth,
-            boxSizing: "border-box",
-          },
-        }}
-      >
-        <Toolbar>
-          <Typography variant="h6">Admin Dashboard</Typography>
-        </Toolbar>
-        <List>
-          {navItems.map((item) => (
-            <ListItem key={item.text} disablePadding>
-              <ListItemButton onClick={() => navigate(item.path)}>
-                <ListItemIcon>{item.icon}</ListItemIcon>
-                <ListItemText primary={item.text} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-      </Drawer>
-
-      {/* Main Content */}
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          ml: `${drawerWidth}px`,
-          p: 3,
-        }}
-      >
-        {/* Top App Bar */}
-        <AppBar position="static" sx={{ ml: `${drawerWidth}px` }}>
+    <ThemeProvider theme={adminTheme}>
+      <Box sx={{ display: "flex", bgcolor: "background.default", minHeight: "100vh" }}>
+        <CssBaseline />
+        
+        {/* App Bar */}
+        <AppBar 
+          position="fixed" 
+          sx={{ 
+            zIndex: (theme) => theme.zIndex.drawer + 1,
+            boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+            bgcolor: "white",
+            color: "text.primary",
+          }}
+        >
           <Toolbar>
-            <Typography variant="h6" sx={{ flexGrow: 1 }}>
-              Admin Dashboard
-            </Typography>
-            <TextField
-              size="small"
-              placeholder="Search…"
-              InputProps={{
-                startAdornment: <SearchIcon />,
-              }}
-              sx={{ bgcolor: "white", borderRadius: 1, mr: 2, width: 200 }}
-            />
-            <Avatar
-              sx={{ bgcolor: "#2196f3", cursor: "pointer" }}
-              onClick={() => navigate("/userprofile")}
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={handleMobileDrawerToggle}
+              sx={{ mr: 2, display: { sm: "none" } }}
             >
-              A
-            </Avatar>
-            <Button color="inherit" onClick={() => {
-              localStorage.removeItem("token");
-              navigate("/login");
-            }}>
-              Logout
-            </Button>
+              <MenuIcon />
+            </IconButton>
+            <IconButton
+              color="inherit"
+              aria-label="toggle drawer"
+              edge="start"
+              onClick={handleDrawerToggle}
+              sx={{ mr: 2, display: { xs: "none", sm: "block" } }}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
+              Solar Energy Admin Dashboard
+            </Typography>
+            
+            <Box sx={{ display: "flex", alignItems: "center" }}>
+              <IconButton color="inherit">
+                <Badge badgeContent={4} color="error">
+                  <NotificationsIcon />
+                </Badge>
+              </IconButton>
+              <IconButton color="inherit" sx={{ ml: 1 }}>
+                <SettingsIcon />
+              </IconButton>
+              <Box sx={{ ml: 2 }}>
+                <IconButton
+                  onClick={handleMenuOpen}
+                  size="small"
+                  aria-controls={Boolean(anchorEl) ? "account-menu" : undefined}
+                  aria-haspopup="true"
+                  aria-expanded={Boolean(anchorEl) ? "true" : undefined}
+                >
+                  <Avatar sx={{ bgcolor: theme.palette.primary.main }}>A</Avatar>
+                </IconButton>
+                <Menu
+                  id="account-menu"
+                  anchorEl={anchorEl}
+                  open={Boolean(anchorEl)}
+                  onClose={handleMenuClose}
+                  transformOrigin={{ horizontal: "right", vertical: "top" }}
+                  anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+                >
+                  <MenuItem onClick={() => navigate("/profile")}>
+                    <ListItemIcon>
+                      <PersonIcon fontSize="small" />
+                    </ListItemIcon>
+                    Profile
+                  </MenuItem>
+                  <MenuItem onClick={() => navigate("/settings")}>
+                    <ListItemIcon>
+                      <SettingsIcon fontSize="small" />
+                    </ListItemIcon>
+                    Settings
+                  </MenuItem>
+                  <Divider />
+                  <MenuItem onClick={handleLogout}>
+                    <ListItemIcon>
+                      <LogoutIcon fontSize="small" />
+                    </ListItemIcon>
+                    Logout
+                  </MenuItem>
+                </Menu>
+              </Box>
+            </Box>
           </Toolbar>
         </AppBar>
 
-        {/* Overview Cards */}
-        <Grid container spacing={2} sx={{ mt: 2 }}>
-          <Grid item xs={12} md={4}>
-            <Card elevation={3}>
-              <CardContent sx={{ display: "flex", alignItems: "center" }}>
-                <TableChartIcon sx={{ fontSize: 40, mr: 2 }} color="primary" />
-                <Box>
-                  <Typography variant="subtitle2">Total Panels</Typography>
-                  <Typography variant="h5">{overview.totalPanels}</Typography>
-                </Box>
-              </CardContent>
-            </Card>
+        {/* Sidebar Drawer - Desktop */}
+        <Drawer
+          variant="permanent"
+          open={drawerOpen}
+          sx={{
+            width: drawerOpen ? 240 : 72,
+            flexShrink: 0,
+            [`& .MuiDrawer-paper`]: {
+              width: drawerOpen ? 240 : 72,
+              boxSizing: "border-box",
+              overflowX: "hidden",
+              transition: theme.transitions.create("width", {
+                easing: theme.transitions.easing.sharp,
+                duration: theme.transitions.duration.enteringScreen,
+              }),
+            },
+            display: { xs: "none", sm: "block" },
+          }}
+        >
+          <Toolbar />
+          {drawer}
+        </Drawer>
+
+        {/* Sidebar Drawer - Mobile */}
+        <Drawer
+          variant="temporary"
+          open={mobileOpen}
+          onClose={handleMobileDrawerToggle}
+          sx={{
+            display: { xs: "block", sm: "none" },
+            [`& .MuiDrawer-paper`]: { width: 240, boxSizing: "border-box" },
+          }}
+        >
+          {drawer}
+        </Drawer>
+
+        {/* Main Content */}
+        <Box
+          component="main"
+          sx={{
+            flexGrow: 1,
+            p: 3,
+            width: { sm: `calc(100% - ${drawerOpen ? 240 : 72}px)` },
+            ml: { sm: `${drawerOpen ? 240 : 72}px` },
+            transition: theme.transitions.create(["width", "margin"], {
+              easing: theme.transitions.easing.sharp,
+              duration: theme.transitions.duration.enteringScreen,
+            }),
+          }}
+        >
+          <Toolbar />
+          
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="h4" gutterBottom>
+              Welcome to Admin Dashboard
+            </Typography>
+            <Typography variant="body1" color="text.secondary">
+              Manage users, monitor solar systems, handle payments, and review feedback.
+            </Typography>
+          </Box>
+
+          {/* Dashboard Stats */}
+          <Grid container spacing={3} sx={{ mb: 4 }}>
+            {stats.map((stat, index) => (
+              <Grid item xs={12} sm={6} md={3} key={index}>
+                <Card>
+                  <CardContent sx={{ p: 3 }}>
+                    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <Box>
+                        <Typography variant="h6" gutterBottom>
+                          {stat.title}
+                        </Typography>
+                        <Typography variant="h4" sx={{ fontWeight: "bold" }}>
+                          {stat.value}
+                        </Typography>
+                      </Box>
+                      <Avatar
+                        sx={{
+                          bgcolor: alpha(stat.color, 0.1),
+                          color: stat.color,
+                          width: 56,
+                          height: 56,
+                        }}
+                      >
+                        {stat.icon}
+                      </Avatar>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
           </Grid>
-          <Grid item xs={12} md={4}>
-            <Card elevation={3}>
-              <CardContent sx={{ display: "flex", alignItems: "center" }}>
-                <SolarPowerIcon sx={{ fontSize: 40, mr: 2 }} color="success" />
-                <Box>
-                  <Typography variant="subtitle2">Total Capacity</Typography>
-                  <Typography variant="h5">
-                    {overview.totalCapacity} kW
+
+          {/* Quick Access */}
+          <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
+            Quick Access
+          </Typography>
+          <Grid container spacing={3}>
+            {menuItems.map((item, index) => (
+              <Grid item xs={12} sm={6} md={3} key={index}>
+                <Paper
+                  sx={{
+                    p: 3,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    cursor: "pointer",
+                    transition: "all 0.3s ease",
+                    "&:hover": {
+                      transform: "translateY(-5px)",
+                      boxShadow: "0 12px 30px rgba(0,0,0,0.1)",
+                    },
+                  }}
+                  onClick={() => navigate(item.path)}
+                >
+                  <Avatar
+                    sx={{
+                      bgcolor: index === 0 ? theme.palette.primary.main :
+                              index === 1 ? theme.palette.secondary.main :
+                              index === 2 ? "#ff9800" : "#f44336",
+                      width: 60,
+                      height: 60,
+                      mb: 2,
+                    }}
+                  >
+                    {item.icon}
+                  </Avatar>
+                  <Typography variant="h6" align="center">
+                    {item.text}
                   </Typography>
-                </Box>
-              </CardContent>
-            </Card>
+                </Paper>
+              </Grid>
+            ))}
           </Grid>
-          <Grid item xs={12} md={4}>
-            <Card elevation={3}>
-              <CardContent sx={{ display: "flex", alignItems: "center" }}>
-                <CloudIcon sx={{ fontSize: 40, mr: 2 }} color="info" />
-                <Box>
-                  <Typography variant="subtitle2">Weather Forecast</Typography>
-                  <Typography variant="h6">{overview.weather}</Typography>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
-
-        {/* Energy Insights Chart */}
-        <Box sx={{ mt: 4 }}>
-          <Typography variant="h6" gutterBottom>
-            Energy Insights
-          </Typography>
-          <Card elevation={3} sx={{ p: 2 }}>
-            <Line data={chartData} options={chartOptions} />
-          </Card>
-        </Box>
-
-        {/* Solar Input Data Table */}
-        <Box sx={{ mt: 4 }}>
-          <Typography variant="h6" gutterBottom>
-            Solar Input Data
-            <Button
-              variant="contained"
-              size="small"
-              sx={{ float: "right" }}
-            >
-              Export Data
-            </Button>
-          </Typography>
-          <TableContainer component={Paper} elevation={3}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Location</TableCell>
-                  <TableCell>Panels</TableCell>
-                  <TableCell>Capacity (kW)</TableCell>
-                  <TableCell>Date</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {tableRows.map((row, idx) => (
-                  <TableRow key={idx}>
-                    <TableCell>{row.location}</TableCell>
-                    <TableCell>{row.panels}</TableCell>
-                    <TableCell>{row.capacity}</TableCell>
-                    <TableCell>{row.date}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
         </Box>
       </Box>
-    </Box>
+    </ThemeProvider>
   );
-}
+};
+
+export default AdminDashboard;

@@ -11,6 +11,7 @@ const authRoutes = require("./routes/authRoutes");
 const contactRoutes = require('./routes/contactRoutes');
 const contactAdminRoutes = require('./routes/contactAdminRoute');
 const chatbotRoutes = require("./routes/chatbot");
+const feedbackRoutes = require("./routes/feedbackRoute"); // Import the feedback routes
 
 
 // const feedbackRoutes = require('./routes/');
@@ -41,7 +42,7 @@ app.use("/api/auth", authRoutes);
 app.use('/api', contactRoutes);
 app.use('/api/contact', contactAdminRoutes);
 app.use("/api/chatbot", require("./routes/chatbot.js"));
-// app.use('/api/feedback', feedbackRoutes);
+app.use('/api/feedback', feedbackRoutes);
 
 // Global Error Handling Middleware
 app.use((err, req, res, next) => {
