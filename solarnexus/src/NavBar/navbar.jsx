@@ -27,7 +27,6 @@ import {
 import { Link, useNavigate, useLocation } from "react-router-dom";
 
 const NAV_ITEMS = [
-  { label: "Monitoring", path: "/Monitoring", icon: <SolarIcon /> },
   { label: "Membership", path: "/MembershipPage", icon: <MembershipIcon /> },
   { label: "Contact Us", path: "/ContactUs", icon: <ContactIcon /> },
   { label: "Feedback", path: "/Feedback", icon: <FeedbackIcon /> },

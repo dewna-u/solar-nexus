@@ -77,15 +77,15 @@ const Footer = () => {
           </Typography>
           <Stack direction="row" alignItems="center" spacing={1} mb={1}>
             <EmailIcon fontSize="small" />
-            <Typography variant="body2">solarnexusofficial@gmail.com</Typography>
+            <Typography variant="body2">solarnexus2k25@gmail.com</Typography>
           </Stack>
           <Stack direction="row" alignItems="center" spacing={1} mb={1}>
             <PhoneIcon fontSize="small" />
-            <Typography variant="body2">+91 98765 43210</Typography>
+            <Typography variant="body2">+94 71 881 4764</Typography>
           </Stack>
           <Stack direction="row" alignItems="center" spacing={1}>
             <LocationOnIcon fontSize="small" />
-            <Typography variant="body2">Chennai, India</Typography>
+            <Typography variant="body2">Colombo, Sri Lanka</Typography>
           </Stack>
         </Grid>
 
@@ -117,7 +117,7 @@ const Footer = () => {
         © {new Date().getFullYear()} Solar Nexus. All rights reserved.
       </Typography>
       <Typography variant="body2" align="center" sx={{ opacity: 0.7, mt: 1 }}>
-        Designed and developed with ❤️ by Solar Nexus Team.
+        Designed and developed with ❤️ by IT_Y3S1_WD_27 Team.
       </Typography>
     </Box>
   );

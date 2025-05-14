@@ -56,8 +56,8 @@ import {
   Warning as WarningIcon,
   MoreVert as MoreVertIcon
 } from "@mui/icons-material";
-import jsPDF from "jspdf";
-import "jspdf-autotable";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 
 // Custom theme for admin payments
 const paymentsTheme = createTheme({
@@ -331,26 +331,26 @@ function AdminPayments() {
         new Date(p.createdAt).toLocaleDateString(),
       ]);
       
-      doc.autoTable({
-        head: [
-          [
-            "Full Name",
-            "Email",
-            "Amount",
-            "Membership",
-            "Method",
-            "Card No",
-            "Expiry",
-            "Date",
-          ],
-        ],
-        body: tableData,
-        startY: 60,
-        styles: { fontSize: 9 },
-        headStyles: { fillColor: [25, 118, 210] },
-      });
-      
-      doc.save("payment_records.pdf");
+      autoTable(doc, {
+  head: [
+    [
+      "Full Name",
+      "Email",
+      "Amount",
+      "Membership",
+      "Method",
+      "Card No",
+      "Expiry",
+      "Date",
+    ],
+  ],
+  body: tableData,
+  startY: 60,
+  styles: { fontSize: 9 },
+  headStyles: { fillColor: [25, 118, 210] },
+});
+
+doc.save("payment_records.pdf");
       
       setSnackbar({
         open: true,
