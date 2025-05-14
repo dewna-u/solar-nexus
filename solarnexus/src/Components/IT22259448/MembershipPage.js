@@ -1,5 +1,7 @@
+// frontend/MembershipPage.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import {
   Box,
   Typography,
@@ -15,6 +17,9 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 function MembershipPage() {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const navigate = useNavigate();
+
+  // grab token once
+  const token = localStorage.getItem("token");
 
   const membershipPlans = [
     {
@@ -40,37 +45,40 @@ function MembershipPage() {
     },
   ];
 
+  // POST to your backend, auth header included
   const handleSubmit = async () => {
     if (!selectedPlan) return;
-    const selectedPlanData = membershipPlans.find((plan) => plan.id === selectedPlan);
-
-    console.log("Submitting membership plan:", selectedPlanData);
+    const planData = membershipPlans.find((p) => p.id === selectedPlan);
 
     try {
-      const response = await fetch("http://localhost:5000/api/membership", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(selectedPlanData),
-      });
+      const response = await axios.post(
+        "http://localhost:5000/api/membership",
+        planData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-      if (response.ok) {
+      if (response.status === 201 || response.status === 200) {
         console.log("Membership plan submitted successfully!");
       } else {
+        console.error("Unexpected status:", response.status);
         alert("Failed to submit membership plan.");
       }
-    } catch (error) {
-      console.error("Error submitting membership:", error);
+    } catch (err) {
+      console.error("Error submitting membership:", err);
       alert("An error occurred while submitting.");
     }
   };
 
+  // Submit + navigate to payment, passing plan via state
   const handleProceed = async () => {
-    const selectedPlanData = membershipPlans.find((plan) => plan.id === selectedPlan);
-    console.log("Selected Plan:", selectedPlanData);
     await handleSubmit();
-    navigate("/PaymentPage", { state: selectedPlanData });
+    const planData = membershipPlans.find((p) => p.id === selectedPlan);
+    navigate("/PaymentPage", { state: planData });
   };
 
   return (
@@ -101,7 +109,7 @@ function MembershipPage() {
                 border: selectedPlan === plan.id ? "2px solid #1976d2" : "1px solid #ccc",
                 boxShadow: selectedPlan === plan.id ? 6 : 2,
                 transition: "all 0.3s ease",
-                '&:hover': { boxShadow: 6 },
+                "&:hover": { boxShadow: 6 },
               }}
             >
               <CardContent>
@@ -112,8 +120,8 @@ function MembershipPage() {
                   {plan.price}
                 </Typography>
                 <List>
-                  {plan.benefits.map((benefit, index) => (
-                    <ListItem key={index} sx={{ display: "flex", alignItems: "center", p: 0.5 }}>
+                  {plan.benefits.map((benefit, i) => (
+                    <ListItem key={i} sx={{ display: "flex", alignItems: "center", p: 0.5 }}>
                       <CheckCircleIcon fontSize="small" color="success" sx={{ mr: 1 }} />
                       <Typography variant="body2">{benefit}</Typography>
                     </ListItem>

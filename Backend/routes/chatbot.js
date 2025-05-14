@@ -3,18 +3,24 @@ const express = require("express");
 const router = express.Router();
 const axios = require("axios");
 const SolarInput = require("../models/SolarInput.js");
+const auth = require("../middleware/authMiddleware");
 
+// Protect this route so req.user.id is available
+router.use(auth);
+
+// POST /api/chatbot/ask
 router.post("/ask", async (req, res) => {
   const { message } = req.body;
+  const userId = req.user.id;
 
   try {
-    // 1. Fetch all solar inputs
-    const inputs = await SolarInput.find().lean();
+    // 1. Fetch only this user's solar inputs
+    const inputs = await SolarInput.find({ userId }).lean();
     if (!inputs.length) {
       return res.status(400).json({ error: "No solar input data available" });
     }
 
-    // 2. Build CSV in-memory with safe defaults
+    // 2. Build CSV in-memory
     const headers = [
       "numPanels","panelCapacity","totalCapacity","location",
       "d1_morning","d1_noon","d1_night",
@@ -22,11 +28,9 @@ router.post("/ask", async (req, res) => {
       "createdAt"
     ];
     const rows = inputs.map(doc => {
-      // default forecast if missing
       const fc = doc.forecast || {};
       const d1 = fc.day1 || {};
       const d2 = fc.day2 || {};
-
       return [
         doc.numPanels || 0,
         doc.panelCapacity || 0,
@@ -46,15 +50,15 @@ router.post("/ask", async (req, res) => {
     // 3. Build prompt
     const prompt = `
 You are “SolarNexusBot,” an AI assistant for a solar-monitoring dashboard.
-Here is the CSV data of all inputs & forecasts:
+Here is your CSV data of inputs & forecasts:
 ${csvString}
 
 User says: "${message}"
 If they say “hi”, reply: “Welcome to SolarNexus! How can I help you today?”
-Otherwise, answer **only** using the data above. dont genarate with special characters like *, #, @, $, %, ^, &, (, ), !, ?, etc. and get data summarise and nice format .
+Otherwise, answer only using the above data, without any special characters like *, #, @, etc. Summarise nicely.
     `.trim();
 
-    // 4. Call Azure OpenAI (DeepSeek-V3)
+    // 4. Call Azure OpenAI
     const apiKey = process.env.DEEPSEEK_API_KEY;
     if (!apiKey) {
       return res.status(500).json({ error: "DeepSeek API key is missing" });

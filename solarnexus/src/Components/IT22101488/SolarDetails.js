@@ -39,85 +39,35 @@ import SolarPowerIcon from "@mui/icons-material/SolarPower";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 
-// Custom theme
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: "#000000", // Green shade for solar theme
-    },
-    secondary: {
-      main: "#ff9800", // Orange for contrast
-    },
-    background: {
-      default: "#f9f9f9",
-    },
-  },
-  typography: {
-    h4: {
-      fontWeight: 700,
-    },
-    h6: {
-      fontWeight: 600,
-    },
-  },
-  components: {
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          borderRadius: 8,
-          textTransform: "none",
-          fontWeight: 600,
-        },
-      },
-    },
-    MuiCard: {
-      styleOverrides: {
-        root: {
-          borderRadius: 12,
-          boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
-        },
-      },
-    },
-    MuiChip: {
-      styleOverrides: {
-        root: {
-          borderRadius: 6,
-          fontWeight: 500,
-        },
-      },
-    },
-  },
-});
+const theme = createTheme({ /* ...your theme as before...*/ });
 
-function SolarDetails() {
-  const [solarInputs, setSolarInputs] = useState([]);
+const API_BASE = "http://localhost:5000/api/solarInputs";
+const token    = localStorage.getItem("token");
+
+export default function SolarDetails() {
+  const [solarInputs, setSolarInputs]     = useState([]);
   const [filteredInputs, setFilteredInputs] = useState([]);
-  const [editData, setEditData] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
+  const [editData, setEditData]           = useState(null);
+  const [searchTerm, setSearchTerm]       = useState("");
+  const [loading, setLoading]             = useState(true);
+  const [snackbar, setSnackbar]           = useState({ open: false, message: "", severity: "success" });
 
   useEffect(() => {
-    fetchSolarInputs();
+    fetchAllInputs();
   }, []);
 
-  const fetchSolarInputs = async () => {
+  // fetch ALL users' data
+  const fetchAllInputs = async () => {
     setLoading(true);
     try {
-      const { data } = await axios.get("http://localhost:5000/api/solarInputs");
-
-      // Normalize: if API returns { input, dates }, wrap input in array
-      let inputs = Array.isArray(data)
-        ? data
-        : data.input
-          ? [data.input]
-          : [];
-
-      setSolarInputs(inputs);
-      setFilteredInputs(inputs);
-      setSnackbar({ open: true, message: "Data loaded successfully", severity: "success" });
+      const { data } = await axios.get(`${API_BASE}/all`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setSolarInputs(data);
+      setFilteredInputs(data);
+      setSnackbar({ open: true, message: "All data loaded", severity: "success" });
     } catch (error) {
-      console.error("Error fetching solar inputs:", error);
+      console.error("Error fetching all inputs:", error);
       setSnackbar({ open: true, message: "Failed to load data", severity: "error" });
     } finally {
       setLoading(false);
@@ -125,188 +75,126 @@ function SolarDetails() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this record?")) return;
+    if (!window.confirm("Delete this record?")) return;
     try {
-      await axios.delete(`http://localhost:5000/api/solarInputs/${id}`);
-      fetchSolarInputs();
-      setSnackbar({ open: true, message: "Record deleted successfully", severity: "success" });
-    } catch (error) {
-      console.error("Error deleting input:", error);
-      setSnackbar({ open: true, message: "Failed to delete record", severity: "error" });
+      await axios.delete(`${API_BASE}/admin/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchAllInputs();
+      setSnackbar({ open: true, message: "Deleted", severity: "success" });
+    } catch {
+      setSnackbar({ open: true, message: "Delete failed", severity: "error" });
     }
   };
 
-  const handleEdit = (input) => {
-    setEditData({ ...input });
-  };
+  const handleEdit = (input) => setEditData({ ...input });
 
   const handleUpdate = async () => {
     if (!editData) return;
     try {
-      const updatedData = {
-        numPanels: parseInt(editData.numPanels, 10) || 0,
-        panelCapacity: parseFloat(editData.panelCapacity) || 0,
-        location: editData.location || "",
+      const upd = {
+        numPanels:    parseInt(editData.numPanels, 10),
+        panelCapacity: parseFloat(editData.panelCapacity),
+        location:     editData.location
       };
-
       await axios.put(
-        `http://localhost:5000/api/solarInputs/${editData._id}`,
-        updatedData
+        `${API_BASE}/admin/${editData._id}`,
+        upd,
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       setEditData(null);
-      fetchSolarInputs();
-      setSnackbar({ open: true, message: "Record updated successfully", severity: "success" });
-    } catch (error) {
-      console.error("Error updating input:", error);
-      setSnackbar({ open: true, message: "Failed to update record", severity: "error" });
+      fetchAllInputs();
+      setSnackbar({ open: true, message: "Updated", severity: "success" });
+    } catch {
+      setSnackbar({ open: true, message: "Update failed", severity: "error" });
     }
   };
 
   const handleSearch = (e) => {
     const term = e.target.value.toLowerCase();
     setSearchTerm(term);
-
     setFilteredInputs(
-      solarInputs.filter((item) =>
-        item.location.toLowerCase().includes(term)
-      )
+      solarInputs.filter((i) => i.location.toLowerCase().includes(term))
     );
   };
 
   const generateCSV = () => {
     const headers = [
-      "Number of Panels",
-      "Panel Capacity (kW)",
-      "Total Capacity (kW)",
-      "Location",
-      "Day 1 - Morning",
-      "Day 1 - Noon",
-      "Day 1 - Night",
-      "Day 2 - Morning",
-      "Day 2 - Noon",
-      "Day 2 - Night",
+      "Panels","Capacity","Total","Location",
+      "D1-M","D1-N","D1-Nt","D2-M","D2-N","D2-Nt"
     ];
-
-    const rows = filteredInputs.map((item) => [
-      item.numPanels,
-      item.panelCapacity,
-      item.totalCapacity,
-      item.location,
-      item.forecast?.day1?.morning ?? "",
-      item.forecast?.day1?.noon ?? "",
-      item.forecast?.day1?.night ?? "",
-      item.forecast?.day2?.morning ?? "",
-      item.forecast?.day2?.noon ?? "",
-      item.forecast?.day2?.night ?? "",
+    const rows = filteredInputs.map(i => [
+      i.numPanels, i.panelCapacity, i.totalCapacity, i.location,
+      i.forecast?.day1?.morning, i.forecast?.day1?.noon, i.forecast?.day1?.night,
+      i.forecast?.day2?.morning, i.forecast?.day2?.noon, i.forecast?.day2?.night,
     ]);
-
-    const csvContent =
-      "data:text/csv;charset=utf-8," +
-      [headers, ...rows].map((row) => row.join(",")).join("\n");
-
-    const encodedUri = encodeURI(csvContent);
+    const csv = `data:text/csv;charset=utf-8,${[headers, ...rows]
+      .map(r => r.join(",")).join("\n")}`;
     const link = document.createElement("a");
-    link.href = encodedUri;
-    link.download = "solar_report.csv";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    setSnackbar({ open: true, message: "CSV exported successfully", severity: "success" });
+    link.href = encodeURI(csv);
+    link.download = "all_solar_data.csv";
+    document.body.appendChild(link); link.click(); link.remove();
+    setSnackbar({ open: true, message: "CSV exported", severity: "success" });
   };
 
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
+  const handleCloseSnackbar = () => setSnackbar(s => ({ ...s, open:false }));
 
-  // Calculate summary stats
-  const totalPanels = filteredInputs.reduce((sum, item) => sum + (item.numPanels || 0), 0);
-  const totalCapacity = filteredInputs.reduce((sum, item) => sum + (item.totalCapacity || 0), 0);
-  const averageCapacity = filteredInputs.length ? (totalCapacity / filteredInputs.length).toFixed(2) : 0;
+  const totalPanels    = filteredInputs.reduce((s,i)=>s+(i.numPanels||0),0);
+  const totalCapacity = filteredInputs.reduce((s,i)=>s+(i.totalCapacity||0),0);
+  const avgCapacity   = filteredInputs.length
+    ? (totalCapacity/filteredInputs.length).toFixed(2)
+    : 0;
 
   return (
     <ThemeProvider theme={theme}>
-      <Box sx={{ bgcolor: "background.default", minHeight: "100vh", py: 4 }}>
+      <Box sx={{ bgcolor: "background.default", minHeight:"100vh", py:4 }}>
         <Container maxWidth="xl">
-          <Box sx={{ mb: 4, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <SolarPowerIcon sx={{ fontSize: 40, color: "primary.main", mr: 2 }} />
-            <Typography variant="h4" color="primary.main">
-              Solar Input Management
-            </Typography>
+          <Box sx={{ mb:4, textAlign:"center" }}>
+            <SolarPowerIcon sx={{ fontSize:40, mr:1 }}/>
+            <Typography variant="h4">Admin: All Solar Inputs</Typography>
           </Box>
 
-          {/* Summary Cards */}
-          <Grid container spacing={3} sx={{ mb: 4 }}>
-            <Grid item xs={12} md={4}>
-              <Card>
-                <CardContent sx={{ textAlign: "center" }}>
-                  <Typography variant="h6" color="text.secondary" gutterBottom>
-                    Total Solar Panels
-                  </Typography>
-                  <Typography variant="h3" color="primary.main" fontWeight="bold">
-                    {totalPanels}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <Card>
-                <CardContent sx={{ textAlign: "center" }}>
-                  <Typography variant="h6" color="text.secondary" gutterBottom>
-                    Total Capacity
-                  </Typography>
-                  <Typography variant="h3" color="primary.main" fontWeight="bold">
-                    {totalCapacity} kW
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <Card>
-                <CardContent sx={{ textAlign: "center" }}>
-                  <Typography variant="h6" color="text.secondary" gutterBottom>
-                    Average Capacity
-                  </Typography>
-                  <Typography variant="h3" color="primary.main" fontWeight="bold">
-                    {averageCapacity} kW
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
+          {/* Summary */}
+          <Grid container spacing={3} mb={4}>
+            {[{
+              label:"Total Panels", value:totalPanels
+            },{
+              label:"Total Capacity (kW)", value:`${totalCapacity}`
+            },{
+              label:"Avg Capacity (kW)", value:`${avgCapacity}`
+            }].map((c,i)=>(
+              <Grid key={i} item xs={12} md={4}>
+                <Card>
+                  <CardContent sx={{ textAlign:"center" }}>
+                    <Typography variant="h6" color="text.secondary">{c.label}</Typography>
+                    <Typography variant="h3">{c.value}</Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
           </Grid>
 
-          <Card sx={{ mb: 4 }}>
+          {/* Controls */}
+          <Card sx={{ mb:4 }}>
             <CardContent>
-              <Grid container spacing={2} alignItems="center" justifyContent="space-between">
+              <Grid container alignItems="center" spacing={2}>
                 <Grid item xs={12} md={6}>
                   <TextField
                     fullWidth
-                    placeholder="Search by location..."
-                    variant="outlined"
+                    placeholder="Search by location"
                     value={searchTerm}
                     onChange={handleSearch}
                     InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <SearchIcon color="primary" />
-                        </InputAdornment>
-                      ),
+                      startAdornment:<InputAdornment position="start"><SearchIcon/></InputAdornment>
                     }}
                   />
                 </Grid>
-                <Grid item xs={12} md={6} sx={{ display: "flex", justifyContent: { xs: "flex-start", md: "flex-end" }, gap: 2 }}>
-                  <Button
-                    variant="outlined"
-                    startIcon={<RefreshIcon />}
-                    onClick={fetchSolarInputs}
-                  >
-                    Refresh
-                  </Button>
+                <Grid item xs={12} md={6} textAlign={{ xs:"left", md:"right" }}>
+                  <Button startIcon={<RefreshIcon/>} onClick={fetchAllInputs}>Refresh</Button>
                   <Button
                     variant="contained"
-                    startIcon={<DownloadIcon />}
+                    startIcon={<DownloadIcon/>}
                     onClick={generateCSV}
-                    color="primary"
                   >
                     Export CSV
                   </Button>
@@ -315,235 +203,119 @@ function SolarDetails() {
             </CardContent>
           </Card>
 
+          {/* Table */}
           <Card>
-            <CardContent sx={{ p: 0 }}>
-              {loading && <LinearProgress />}
-              
-              <TableContainer>
-                <Table sx={{ minWidth: 650 }}>
-                  <TableHead>
-                    <TableRow sx={{ bgcolor: "primary.light" }}>
-                      <TableCell sx={{ fontWeight: "bold", color: "white" }}>Panels</TableCell>
-                      <TableCell sx={{ fontWeight: "bold", color: "white" }}>Capacity (kW)</TableCell>
-                      <TableCell sx={{ fontWeight: "bold", color: "white" }}>Total (kW)</TableCell>
-                      <TableCell sx={{ fontWeight: "bold", color: "white" }}>Location</TableCell>
-                      <TableCell sx={{ fontWeight: "bold", color: "white" }}>Day 1 Forecast</TableCell>
-                      <TableCell sx={{ fontWeight: "bold", color: "white" }}>Day 2 Forecast</TableCell>
-                      <TableCell align="center" sx={{ fontWeight: "bold", color: "white" }}>Actions</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {filteredInputs.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
-                          <Typography variant="body1" color="text.secondary">
-                            No records found
-                          </Typography>
+            {loading && <LinearProgress />}
+            <TableContainer>
+              <Table>
+                <TableHead sx={{ bgcolor:"primary.light" }}>
+                  <TableRow>
+                    {["Panels","Cap","Total","Location","D1","D2","Actions"]
+                      .map(h=>(
+                        <TableCell key={h} sx={{ fontWeight:"bold", color:"white" }}>
+                          {h}
+                        </TableCell>
+                      ))}
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {filteredInputs.length===0
+                    ? <TableRow>
+                        <TableCell colSpan={7} align="center" sx={{ py:3 }}>
+                          No records
                         </TableCell>
                       </TableRow>
-                    ) : (
-                      filteredInputs.map((input, index) => (
-                        <TableRow 
-                          key={input._id}
-                          sx={{ 
-                            "&:nth-of-type(odd)": { bgcolor: "action.hover" },
-                            "&:hover": { bgcolor: "action.selected" }
-                          }}
-                        >
+                    : filteredInputs.map(input=>(
+                        <TableRow key={input._id}>
                           <TableCell>{input.numPanels}</TableCell>
                           <TableCell>{input.panelCapacity}</TableCell>
+                          <TableCell>{input.totalCapacity}</TableCell>
                           <TableCell>
-                            <Typography fontWeight="medium" color="primary">
-                              {input.totalCapacity}
-                            </Typography>
-                          </TableCell>
-                          <TableCell>
-                            <Box sx={{ display: "flex", alignItems: "center" }}>
-                              <LocationOnIcon fontSize="small" color="action" sx={{ mr: 1 }} />
+                            <Box display="flex" alignItems="center">
+                              <LocationOnIcon fontSize="small" sx={{ mr:1 }}/>
                               {input.location}
                             </Box>
                           </TableCell>
-
                           <TableCell>
-                            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                              <Tooltip title="Morning">
-                                <Chip
-                                  label={`🌅 ${input.forecast?.day1?.morning ?? "—"} kWh`}
-                                  size="small"
-                                  color="primary"
-                                  variant="outlined"
-                                />
-                              </Tooltip>
-                              <Tooltip title="Noon">
-                                <Chip
-                                  label={`🌤️ ${input.forecast?.day1?.noon ?? "—"} kWh`}
-                                  size="small"
-                                  color="secondary"
-                                  variant="outlined"
-                                />
-                              </Tooltip>
-                              <Tooltip title="Night">
-                                <Chip
-                                  label={`🌙 ${input.forecast?.day1?.night ?? "—"} kWh`}
-                                  size="small"
-                                  color="default"
-                                  variant="outlined"
-                                />
-                              </Tooltip>
-                            </Box>
+                            {[ "morning","noon","night" ].map(seg=>(
+                              <Chip
+                                key={seg}
+                                label={`${input.forecast.day1[seg] ?? "—"}`}
+                                size="small"
+                                sx={{ mr:0.5 }}
+                              />
+                            ))}
                           </TableCell>
-
                           <TableCell>
-                            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                              <Tooltip title="Morning">
-                                <Chip
-                                  label={`🌅 ${input.forecast?.day2?.morning ?? "—"} kWh`}
-                                  size="small"
-                                  color="primary"
-                                  variant="outlined"
-                                />
-                              </Tooltip>
-                              <Tooltip title="Noon">
-                                <Chip
-                                  label={`🌤️ ${input.forecast?.day2?.noon ?? "—"} kWh`}
-                                  size="small"
-                                  color="secondary"
-                                  variant="outlined"
-                                />
-                              </Tooltip>
-                              <Tooltip title="Night">
-                                <Chip
-                                  label={`🌙 ${input.forecast?.day2?.night ?? "—"} kWh`}
-                                  size="small"
-                                  color="default"
-                                  variant="outlined"
-                                />
-                              </Tooltip>
-                            </Box>
+                            {[ "morning","noon","night" ].map(seg=>(
+                              <Chip
+                                key={seg}
+                                label={`${input.forecast.day2[seg] ?? "—"}`}
+                                size="small"
+                                sx={{ mr:0.5 }}
+                              />
+                            ))}
                           </TableCell>
-
                           <TableCell align="center">
-                            <Box sx={{ display: "flex", justifyContent: "center", gap: 1 }}>
-                              <Tooltip title="Edit">
-                                <IconButton
-                                  color="primary"
-                                  size="small"
-                                  onClick={() => handleEdit(input)}
-                                >
-                                  <EditIcon />
-                                </IconButton>
-                              </Tooltip>
-                              <Tooltip title="Delete">
-                                <IconButton
-                                  color="error"
-                                  size="small"
-                                  onClick={() => handleDelete(input._id)}
-                                >
-                                  <DeleteIcon />
-                                </IconButton>
-                              </Tooltip>
-                            </Box>
+                            <Tooltip title="Edit">
+                              <IconButton onClick={()=>handleEdit(input)}><EditIcon/></IconButton>
+                            </Tooltip>
+                            <Tooltip title="Delete">
+                              <IconButton onClick={()=>handleDelete(input._id)}><DeleteIcon/></IconButton>
+                            </Tooltip>
                           </TableCell>
                         </TableRow>
                       ))
-                    )}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </CardContent>
+                  }
+                </TableBody>
+              </Table>
+            </TableContainer>
           </Card>
 
-          <Dialog
-            open={!!editData}
-            onClose={() => setEditData(null)}
-            maxWidth="sm"
-            fullWidth
-            PaperProps={{
-              sx: { borderRadius: 2 }
-            }}
-          >
-            <DialogTitle sx={{ bgcolor: "primary.main", color: "white" }}>
-              Edit Solar Input
-            </DialogTitle>
-            <DialogContent dividers>
-              <Box sx={{ pt: 1 }}>
-                <TextField
-                  label="Number of Panels"
-                  type="number"
-                  fullWidth
-                  margin="normal"
-                  value={editData?.numPanels ?? ""}
-                  onChange={(e) =>
-                    setEditData({ ...editData, numPanels: e.target.value })
-                  }
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <SolarPowerIcon color="primary" />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-                <TextField
-                  label="Panel Capacity (kW)"
-                  type="number"
-                  fullWidth
-                  margin="normal"
-                  value={editData?.panelCapacity ?? ""}
-                  onChange={(e) =>
-                    setEditData({ ...editData, panelCapacity: e.target.value })
-                  }
-                  InputProps={{
-                    endAdornment: <InputAdornment position="end">kW</InputAdornment>,
-                  }}
-                />
-                <TextField
-                  label="Location"
-                  fullWidth
-                  margin="normal"
-                  value={editData?.location ?? ""}
-                  onChange={(e) =>
-                    setEditData({ ...editData, location: e.target.value })
-                  }
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <LocationOnIcon color="primary" />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </Box>
+          {/* Edit Dialog */}
+          <Dialog open={!!editData} onClose={()=>setEditData(null)}>
+            <DialogTitle>Edit Input</DialogTitle>
+            <DialogContent>
+              <TextField
+                label="Panels"
+                type="number"
+                fullWidth
+                margin="normal"
+                value={editData?.numPanels || ""}
+                onChange={e=>setEditData(d=>({...d, numPanels:e.target.value}))}
+              />
+              <TextField
+                label="Capacity"
+                type="number"
+                fullWidth
+                margin="normal"
+                value={editData?.panelCapacity || ""}
+                onChange={e=>setEditData(d=>({...d, panelCapacity:e.target.value}))}
+              />
+              <TextField
+                label="Location"
+                fullWidth
+                margin="normal"
+                value={editData?.location || ""}
+                onChange={e=>setEditData(d=>({...d, location:e.target.value}))}
+              />
             </DialogContent>
-            <DialogActions sx={{ px: 3, py: 2 }}>
-              <Button onClick={() => setEditData(null)} color="inherit">
-                Cancel
-              </Button>
-              <Button onClick={handleUpdate} variant="contained" color="primary">
-                Save Changes
-              </Button>
+            <DialogActions>
+              <Button onClick={()=>setEditData(null)}>Cancel</Button>
+              <Button onClick={handleUpdate} variant="contained">Save</Button>
             </DialogActions>
           </Dialog>
 
-          <Snackbar 
-            open={snackbar.open} 
-            autoHideDuration={4000} 
+          <Snackbar
+            open={snackbar.open}
+            autoHideDuration={4000}
             onClose={handleCloseSnackbar}
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            anchorOrigin={{ vertical:"bottom", horizontal:"right" }}
           >
-            <Alert 
-              onClose={handleCloseSnackbar} 
-              severity={snackbar.severity} 
-              variant="filled"
-              sx={{ width: '100%' }}
-            >
-              {snackbar.message}
-            </Alert>
+            <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
           </Snackbar>
         </Container>
       </Box>
     </ThemeProvider>
   );
 }
-
-export default SolarDetails;

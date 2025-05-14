@@ -1,53 +1,70 @@
 // controllers/membershipController.js
 const Membership = require("../models/Membership");
 
-// Get Membership Details
+// Get the logged-in user’s membership
 exports.getMembershipDetails = async (req, res) => {
   try {
-    const membership = await Membership.findOne({ userId: req.params.userId });
+    const userId = req.user.id;
+    const membership = await Membership.findOne({ userId });
     if (!membership) {
-      return res.status(404).json({ message: "Membership not found" });
+      return res.status(404).json({ message: "No membership found for this user" });
     }
     res.status(200).json(membership);
   } catch (error) {
-    console.error(error);
+    console.error("Error fetching membership:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
 
-// Change Membership Plan
+// Change (or create) the user’s membership plan
 exports.changeMembershipPlan = async (req, res) => {
   try {
-    const { userId, type, price, nextPaymentDate } = req.body;
-    const membership = await Membership.findOneAndUpdate(
-      { userId },
-      { type, price, nextPaymentDate, status: "Active" },
-      { new: true }
-    );
-    if (!membership) {
-      return res.status(404).json({ message: "Membership not found" });
+    const userId = req.user.id;
+    const { planId, name, price, amount, benefits, nextPaymentDate } = req.body;
+
+    // Validate required fields
+    if (!planId || !name || !price || !amount || !benefits) {
+      return res.status(400).json({ message: "Missing required plan fields" });
     }
-    res.status(200).json(membership);
+
+    // Upsert the membership document
+    const updated = await Membership.findOneAndUpdate(
+      { userId },
+      {
+        userId,
+        planId,
+        name,
+        price,
+        amount,
+        benefits,
+        status: "Active",
+        ...(nextPaymentDate && { nextPaymentDate }),
+      },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
+    );
+
+    res.status(200).json(updated);
   } catch (error) {
-    console.error(error);
+    console.error("Error changing membership plan:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
 
-// Cancel Membership
+// Cancel the logged-in user’s membership
 exports.cancelMembership = async (req, res) => {
   try {
-    const membership = await Membership.findOneAndUpdate(
-      { userId: req.params.userId },
+    const userId = req.user.id;
+    const cancelled = await Membership.findOneAndUpdate(
+      { userId },
       { status: "Cancelled" },
       { new: true }
     );
-    if (!membership) {
-      return res.status(404).json({ message: "Membership not found" });
+    if (!cancelled) {
+      return res.status(404).json({ message: "No membership to cancel" });
     }
-    res.status(200).json({ message: "Membership has been cancelled" });
+    res.status(200).json({ message: "Membership has been cancelled", membership: cancelled });
   } catch (error) {
-    console.error(error);
+    console.error("Error cancelling membership:", error);
     res.status(500).json({ message: "Server error" });
   }
 };

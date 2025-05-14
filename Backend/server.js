@@ -7,7 +7,6 @@ const bodyParser = require("body-parser");
 const solarInputRoutes = require("./routes/solarInputs");
 const membershipRoutes = require("./routes/membershipRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
-const authRoutes = require("./routes/authRoutes");
 const contactRoutes = require('./routes/contactRoutes');
 const contactAdminRoutes = require('./routes/contactAdminRoute');
 const chatbotRoutes = require("./routes/chatbot");
@@ -38,8 +37,7 @@ app.get("/", (req, res) => {
 app.use("/api/membership", membershipRoutes);
 app.use("/api/payment", require("./routes/paymentRoutes"));
 app.use("/api/solarInputs", require("./routes/solarInputs"));
-app.use("/api/auth", authRoutes);
-app.use('/api', contactRoutes);
+app.use("/api/auth", require("./routes/authRoutes"));app.use('/api', contactRoutes);
 app.use('/api/contact', contactAdminRoutes);
 app.use("/api/chatbot", require("./routes/chatbot.js"));
 app.use('/api/feedback', feedbackRoutes);

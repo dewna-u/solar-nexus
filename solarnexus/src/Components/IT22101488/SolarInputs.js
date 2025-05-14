@@ -222,8 +222,14 @@ function SolarInputs() {
       location: formData.location,
     }
 
+    const token = localStorage.getItem("token")
+
     try {
-      const response = await axios.post("http://localhost:5000/api/solarInputs/add", payload)
+      const response = await axios.post("http://localhost:5000/api/solarInputs/add", payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
       if (response.status === 201) {
         navigate("/MonitoringDashboard", {
           state: { weatherData: response.data.data.weather },
@@ -246,6 +252,7 @@ function SolarInputs() {
       const numPanelsMatch = speechText.match(/(\d+)\s*panels?/i)
       const capacityMatch = speechText.match(/each\s*(\d+(\.\d+)?)/i) || speechText.match(/(\d+(\.\d+)?)\s*k?w/i) // fallback match like "1 kW"
       const location = matchDistrict(speechText)
+      
 
       const numPanels = numPanelsMatch ? numPanelsMatch[1] : ""
       const panelCapacity = capacityMatch ? capacityMatch[1] : ""

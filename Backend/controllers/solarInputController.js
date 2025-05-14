@@ -3,8 +3,10 @@
 const SolarInput = require("../models/SolarInput.js");
 const axios = require("axios");
 
+// Create a new solar input, automatically tagging it with the logged‐in user’s ID
 exports.addSolarInput = async (req, res) => {
   try {
+    const userId = req.user.id;                    // ← grab user ID
     const { numPanels, panelCapacity, location } = req.body;
     if (!numPanels || !panelCapacity || !location) {
       return res.status(400).json({ message: "All fields are required" });
@@ -29,23 +31,18 @@ exports.addSolarInput = async (req, res) => {
     }
     const { lat, lon } = geo.data[0];
 
-    // 4) Fetch 5-day / 3-hour forecast
+    // 4) Fetch 5-day/3-hour forecast
     const weatherResp = await axios.get(
       `https://api.openweathermap.org/data/2.5/forecast` +
       `?lat=${lat}&lon=${lon}&units=metric&appid=${openWeatherApiKey}`
     );
     const list = weatherResp.data.list || [];
 
-    // 5) Compute tomorrow & day-after based on server date
-    const todayDate = new Date();
-    const toISO = (d) => d.toISOString().split("T")[0];
-    const today = toISO(todayDate);
-    const tomorrow = new Date(todayDate);
-    tomorrow.setDate(todayDate.getDate() + 1);
-    const day1 = toISO(tomorrow);
-    const dayAfter = new Date(todayDate);
-    dayAfter.setDate(todayDate.getDate() + 2);
-    const day2 = toISO(dayAfter);
+    // 5) Compute ISO dates for tomorrow & day-after
+    const today = new Date();
+    const iso = d => d.toISOString().split("T")[0];
+    const day1 = iso(new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1));
+    const day2 = iso(new Date(today.getFullYear(), today.getMonth(), today.getDate() + 2));
 
     // 6) Prepare segments
     const forecast = {
@@ -54,30 +51,32 @@ exports.addSolarInput = async (req, res) => {
     };
 
     // 7) Accumulate kWh = kW × 3h × cloudFactor
-    list.forEach((item) => {
+    list.forEach(item => {
       const [dateStr, timeStr] = item.dt_txt.split(" ");
       const hour = Number(timeStr.split(":")[0]);
-      const cloudFactor = (100 - item.clouds.all) / 100;
-      const energy = totalCapacity * 3 * cloudFactor;
-
       let seg = null;
       if (hour >= 6 && hour < 12) seg = "morning";
       else if (hour >= 12 && hour < 18) seg = "noon";
       else if (hour >= 18 && hour < 24) seg = "night";
+      if (!seg) return;
 
-      if (seg && dateStr === day1) forecast.day1[seg] += energy;
-      if (seg && dateStr === day2) forecast.day2[seg] += energy;
+      const dayKey = dateStr === day1 ? "day1" : dateStr === day2 ? "day2" : null;
+      if (!dayKey) return;
+
+      const cloudFactor = (100 - item.clouds.all) / 100;
+      forecast[dayKey][seg] += totalCapacity * 3 * cloudFactor;
     });
 
     // 8) Round
-    ["day1", "day2"].forEach((d) =>
-      ["morning", "noon", "night"].forEach((p) => {
+    ["day1", "day2"].forEach(d =>
+      ["morning", "noon", "night"].forEach(p => {
         forecast[d][p] = Number(forecast[d][p].toFixed(2));
       })
     );
 
-    // 9) Persist
+    // 9) Persist (including userId)
     const newInput = new SolarInput({
+      userId,
       numPanels,
       panelCapacity,
       totalCapacity,
@@ -94,13 +93,11 @@ exports.addSolarInput = async (req, res) => {
   }
 };
 
-// controllers/solarInputController.js
-
+// Fetch *only* this user’s inputs
 exports.getAllSolarInputs = async (req, res) => {
   try {
-    // Fetch all inputs, oldest first
-    const inputs = await SolarInput.find().sort({ createdAt: 1 });
-    // Return the full array
+    const userId = req.user.id;                     // ← scope by user
+    const inputs = await SolarInput.find({ userId }).sort({ createdAt: 1 });
     return res.status(200).json(inputs);
   } catch (error) {
     console.error("🔥 Error retrieving solar inputs:", error);
@@ -111,16 +108,18 @@ exports.getAllSolarInputs = async (req, res) => {
   }
 };
 
-
+// Delete a single input *only if* it belongs to the logged‐in user
 exports.deleteSolarInput = async (req, res) => {
   try {
-    const deleted = await SolarInput.findByIdAndDelete(req.params.id);
+    const userId = req.user.id;
+    const deleted = await SolarInput.findOneAndDelete({
+      _id: req.params.id,
+      userId,
+    });
     if (!deleted) {
       return res.status(404).json({ message: "Solar input not found" });
     }
-    return res
-      .status(200)
-      .json({ message: "Solar input deleted successfully!" });
+    return res.status(200).json({ message: "Deleted successfully!" });
   } catch (error) {
     console.error("🔥 Error deleting solar input:", error);
     return res.status(500).json({
@@ -130,8 +129,10 @@ exports.deleteSolarInput = async (req, res) => {
   }
 };
 
+// Update *only* if this user owns it
 exports.updateSolarInput = async (req, res) => {
   try {
+    const userId = req.user.id;
     const { numPanels, panelCapacity, location } = req.body;
     if (!numPanels || !panelCapacity || !location) {
       return res
@@ -140,8 +141,8 @@ exports.updateSolarInput = async (req, res) => {
     }
 
     const totalCapacity = numPanels * panelCapacity;
-    const updated = await SolarInput.findByIdAndUpdate(
-      req.params.id,
+    const updated = await SolarInput.findOneAndUpdate(
+      { _id: req.params.id, userId },
       { numPanels, panelCapacity, totalCapacity, location },
       { new: true, runValidators: true }
     );
@@ -149,7 +150,7 @@ exports.updateSolarInput = async (req, res) => {
       return res.status(404).json({ message: "Solar input not found" });
     }
     return res.status(200).json({
-      message: "Solar input updated successfully!",
+      message: "Updated successfully!",
       data: updated,
     });
   } catch (error) {
@@ -160,3 +161,57 @@ exports.updateSolarInput = async (req, res) => {
     });
   }
 };
+
+
+//admin
+
+// --- controllers/solarInputController.js ---
+
+// (1) Get *all* solar inputs (no user filter)
+exports.getAllSolarInputsAdmin = async (req, res) => {
+  try {
+    const inputs = await SolarInput.find().sort({ createdAt: 1 });
+    return res.status(200).json(inputs);
+  } catch (err) {
+    console.error("🔥 Error retrieving all solar inputs:", err);
+    return res.status(500).json({ message: "Error retrieving data", error: err.message });
+  }
+};
+
+// (2) Update any solar input by ID
+exports.updateSolarInputAdmin = async (req, res) => {
+  try {
+    const { numPanels, panelCapacity, location } = req.body;
+    if (!numPanels || !panelCapacity || !location) {
+      return res.status(400).json({ message: "All fields are required for update" });
+    }
+    const totalCapacity = numPanels * panelCapacity;
+    const updated = await SolarInput.findByIdAndUpdate(
+      req.params.id,
+      { numPanels, panelCapacity, totalCapacity, location },
+      { new: true, runValidators: true }
+    );
+    if (!updated) {
+      return res.status(404).json({ message: "Solar input not found" });
+    }
+    return res.status(200).json({ message: "Updated successfully!", data: updated });
+  } catch (err) {
+    console.error("🔥 Error updating solar input (admin):", err);
+    return res.status(500).json({ message: "Error updating data", error: err.message });
+  }
+};
+
+// (3) Delete any solar input by ID
+exports.deleteSolarInputAdmin = async (req, res) => {
+  try {
+    const deleted = await SolarInput.findByIdAndDelete(req.params.id);
+    if (!deleted) {
+      return res.status(404).json({ message: "Solar input not found" });
+    }
+    return res.status(200).json({ message: "Deleted successfully!" });
+  } catch (err) {
+    console.error("🔥 Error deleting solar input (admin):", err);
+    return res.status(500).json({ message: "Error deleting data", error: err.message });
+  }
+};
+

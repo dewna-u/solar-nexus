@@ -42,6 +42,7 @@ import {
   LocationOn,
   BarChart,
   GridView,
+  Token,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
@@ -122,10 +123,16 @@ function MonitoringDashboard({ onBack }) {
   const [loading, setLoading] = useState(true);
 
   // Fetch the latest solar input on mount
+  const token = localStorage.getItem("token");
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/solarInputs");
+        const res = await axios.get("http://localhost:5000/api/solarInputs",{
+          
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         if (Array.isArray(res.data) && res.data.length > 0) {
           setSolarData(res.data[res.data.length - 1]);
         }

@@ -13,14 +13,11 @@ const UserProfile = () => {
         const token = localStorage.getItem("token"); // Get token from localStorage
         console.log("🔑 Token:", token); // Debugging line to check the token
 
-        if (!token) {
-          setError("Unauthorized! Please log in.");
-          setLoading(false);
-          return;
-        }
-
+        
         const response = await axios.get("http://localhost:5000/api/auth/profile", {
-          headers: { Authorization: `${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`, // Include token in headers
+          },
         });
 
         setUser(response.data);
