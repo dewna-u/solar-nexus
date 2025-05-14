@@ -1,0 +1,52 @@
+.admin-feedback-container {
+    max-width: 95%;
+    margin: 40px auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+}
+
+.admin-title {
+    font-size: 24px;
+    margin-bottom: 20px;
+    text-align: center;
+    color: #2c3e50;
+}
+
+.admin-error {
+    color: #e74c3c;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+.feedback-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+}
+
+.feedback-table thead {
+    background-color: #3498db;
+    color: white;
+}
+
+.feedback-table th,
+.feedback-table td {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+.feedback-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.feedback-table tbody tr:hover {
+    background-color: #f1f1f1;
+}

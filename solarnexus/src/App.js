@@ -15,6 +15,11 @@ import Feedback from "./Components/IT22169044/Feedback";
 import Contact from "./Components/IT22169044/ContactUs";
 import AdminContact from "./Components/IT22169044/AdminContactDashboard";
 import FeedbackAdmin from "./Components/IT22169044/feedbackAdmin";
+import FeedbackList from "./Components/IT22169044/FeedbackList";
+
+
+
+
 
 
 
@@ -48,6 +53,7 @@ function App() {
           <Route path="/Feedback" element={<Feedback />} />
           <Route path="/Contact" element={<Contact />} />
           <Route path="/FeedbackAdmin" element={<FeedbackAdmin />} />
+           <Route path="/FeedbackList" element={<FeedbackList />} />
           <Route path="/AdminContact" element={<AdminContact />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
